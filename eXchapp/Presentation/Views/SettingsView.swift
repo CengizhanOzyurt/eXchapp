@@ -33,7 +33,7 @@ public struct SettingsView: View {
                             .font(.headline)
                             .foregroundColor(isLiquidGlassEnabled ? .black : .black)
                         
-                        Text(isLiquidGlassEnabled ? "Modern şeffaf cam görünümü aktif." : "Klasik İşCep beyaz tasarımı aktif.")
+                        Text(isLiquidGlassEnabled ? "Modern şeffaf cam görünümü aktif." : "Beyaz tasarım aktif.")
                             .font(.caption)
                             .foregroundColor(isLiquidGlassEnabled ? .gray : .gray)
                     }
@@ -45,9 +45,9 @@ public struct SettingsView: View {
                 .padding()
                 .conditionalGlassBackground(cornerRadius: 16)
                 .padding(.horizontal)
-                .onChange(of: isLiquidGlassEnabled) { _, newValue in
-                    FeatureFlags.liquidGlassEnabled = newValue
-                }
+                .onChange(of: isLiquidGlassEnabled) { newValue in
+                                    NotificationCenter.default.post(name: NSNotification.Name("ThemeChangedNotification"), object: nil)
+                                }
                 
                 Spacer()
             }

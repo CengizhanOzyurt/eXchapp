@@ -10,9 +10,10 @@ import SwiftUI
 // MARK: - Home View
 public struct HomeView: View {
     
-    @StateObject private var viewModel = ExchangeViewModel()
+    @StateObject private var viewModel = CurrencyViewModel()
     @State private var showLoginAlert: Bool = false
     @State private var navigateToConvert: Bool = false
+    @State private var selectedTopTab: Int = 0
     
     public var onLoginPromptRequested: (() -> Void)?
     public var onRegisterPromptRequested: (() -> Void)?
@@ -21,6 +22,12 @@ public struct HomeView: View {
         self.onLoginPromptRequested = onLoginPromptRequested
         self.onRegisterPromptRequested = onRegisterPromptRequested
     }
+    
+    private let topTabs: [(icon: String, title: String)] = [
+        ("tablecells", "Hesabım"),
+        ("creditcard", "Kartlarım"),
+        ("chart.pie", "Durumum")
+    ]
     
     public var body: some View {
         ZStack(alignment: .bottom) {
@@ -63,23 +70,8 @@ public struct HomeView: View {
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
                 
-                HStack(spacing: 30) {
-                    VStack(spacing: 4) {
-                        Text("Yatırımım")
-                            .fontWeight(.bold)
-                            .foregroundColor(.white)
-                        Rectangle()
-                            .frame(height: 3)
-                            .foregroundColor(.white)
-                    }
-                    Text("Kartlarım")
-                        .foregroundColor(.white.opacity(0.6))
-                    Text("Durumum")
-                        .foregroundColor(.white.opacity(0.6))
-                    Spacer()
-                }
-                .padding(.horizontal, 16)
-                .padding(.top, 16)
+                topTabBar
+                    .padding(.top, 16)
                 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 20) {
@@ -138,36 +130,63 @@ public struct HomeView: View {
                             if viewModel.isLoading {
                                 ProgressView()
                                     .tint(.white)
+                                    .frame(maxWidth: .infinity)
                                     .padding(.vertical, 20)
                             } else {
                                 VStack(spacing: 8) {
-                                    ForEach(Array(viewModel.rates.keys.sorted()), id: \.self) { currency in
-                                        if let rate = viewModel.rates[currency] {
-                                            HStack {
-                                                Text(currency.uppercased())
+                                    ForEach(viewModel.currencies) { currency in
+                                        HStack(spacing: 12) {
+                                            Text(currency.flagEmoji)
+                                                .font(.title2)
+                                            
+                                            VStack(alignment: .leading, spacing: 2) {
+                                                Text(currency.id)
                                                     .fontWeight(.bold)
                                                     .foregroundColor(.white)
-                                                Spacer()
-                                                Text(String(format: "%.4f TL", rate))
-                                                    .foregroundColor(.cyan)
-                                                    .fontWeight(.semibold)
+                                                Text(currency.name)
+                                                    .font(.caption2)
+                                                    .foregroundColor(.white.opacity(0.6))
                                             }
-                                            .padding(.horizontal, 16)
-                                            .padding(.vertical, 10)
-                                            .background(Color.white.opacity(0.08))
-                                            .cornerRadius(10)
+                                            
+                                            Spacer()
+                                            
+                                            VStack(alignment: .trailing, spacing: 2) {
+                                                Text(String(format: "%.2f TL", currency.sellRate))
+                                                    .font(.system(size: 15, weight: .semibold))
+                                                    .foregroundColor(.white)
+                                                HStack(spacing: 2) {
+                                                    if currency.changePercent > 0 {
+                                                        Image(systemName: "arrow.up.right")
+                                                        Text(String(format: "+%.2f%%", currency.changePercent))
+                                                    } else if currency.changePercent < 0 {
+                                                        Image(systemName: "arrow.down.right")
+                                                        Text(String(format: "%.2f%%", currency.changePercent))
+                                                    } else {
+                                                        Text("%0.00")
+                                                    }
+                                                }
+                                                .font(.system(size: 12, weight: .medium))
+                                                .foregroundColor(
+                                                    currency.changePercent > 0 ? .green :
+                                                        currency.changePercent < 0 ? .red :
+                                                            .white.opacity(0.6)
+                                                )
+                                            }
                                         }
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 10)
+                                        //.glassCard(cornerRadius: 15).opacity(0.6)
+                                        .background(Color.white.opacity(0.1))
+                                        .cornerRadius(12)
                                     }
                                 }
                                 .padding(.horizontal, 16)
                             }
                         }
                         .padding(.top, 10)
-                        Spacer().frame(height: 100)
                     }
                 }
             }
-            
         }
         .alert("Hesap Gerekli", isPresented: $showLoginAlert) {
             Button("Giriş Yap") {
@@ -178,6 +197,33 @@ public struct HomeView: View {
             Text("Devam etmek için hesabınıza giriş yapın veya yeni bir hesap oluşturun.")
         }
     }
+    private var topTabBar: some View {
+            HStack(spacing: 0) {
+                ForEach(Array(topTabs.enumerated()), id: \.offset) { index, tab in
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            selectedTopTab = index
+                        }
+                    } label: {
+                        VStack(spacing: 8) {
+                            Image(systemName: tab.icon)
+                                .font(.system(size: 18, weight: .medium))
+
+                            Text(tab.title)
+                                .font(.system(size: 13, weight: selectedTopTab == index ? .semibold : .regular))
+
+                            Rectangle()
+                                .fill(selectedTopTab == index ? Color.white : Color.clear)
+                                .frame(height: 2)
+                                .padding(.horizontal, 8)
+                        }
+                        .foregroundColor(selectedTopTab == index ? .white : .white.opacity(0.6))
+                        .frame(maxWidth: .infinity)
+                    }
+                }
+            }
+            .padding(.horizontal, 16)
+        }
 }
 
 // MARK: - Subcomponents

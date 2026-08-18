@@ -31,11 +31,11 @@ public final class RootTabBarController: UITabBarController {
     @objc private func handleThemeChange() {
         UIView.animate(withDuration: 0.3) {
             self.configureAppearance()
+            self.tabBar.layoutIfNeeded()
         }
     }
 
     private func configureTabs() {
-        // 1. Sekme: Ana Sayfa
         let homeView = HomeView(
             onLoginPromptRequested: onLoginPromptRequested,
             onRegisterPromptRequested: onRegisterPromptRequested
@@ -43,15 +43,12 @@ public final class RootTabBarController: UITabBarController {
         let homeHosting = UIHostingController(rootView: homeView)
         homeHosting.tabBarItem = UITabBarItem(title: "Ana Sayfa", image: UIImage(systemName: "house.fill"), selectedImage: UIImage(systemName: "house.fill"))
 
-        // 2. Sekme: Kur Çevirici
         let convertHosting = UIHostingController(rootView: ConvertView())
         convertHosting.tabBarItem = UITabBarItem(title: "Çevirici", image: UIImage(systemName: "arrow.left.arrow.right"), selectedImage: UIImage(systemName: "arrow.left.arrow.right"))
 
-        // 3. Sekme: Profil
         let profileHosting = UIHostingController(rootView: ProfileView())
         profileHosting.tabBarItem = UITabBarItem(title: "Profil", image: UIImage(systemName: "person.fill"), selectedImage: UIImage(systemName: "person.fill"))
         
-        // 4. Sekme: Ayarlar
         let settingsHosting = UIHostingController(rootView: SettingsView())
         settingsHosting.tabBarItem = UITabBarItem(title: "Ayarlar", image: UIImage(systemName: "gearshape.fill"), selectedImage: UIImage(systemName: "gearshape.fill"))
 
@@ -62,27 +59,82 @@ public final class RootTabBarController: UITabBarController {
         let appearance = UITabBarAppearance()
         
         // MARK: - Dinamik Tasarım Geçişi
-        if FeatureFlags.liquidGlassEnabled {
+        let isLiquidGlass = FeatureFlags.liquidGlassEnabled
+        
+        if isLiquidGlass {
             // FLAG AÇIK: Tam şeffaf cam efekti
             appearance.configureWithTransparentBackground()
+            appearance.backgroundEffect = nil
             appearance.backgroundColor = UIColor.white.withAlphaComponent(0.15)
             appearance.shadowColor = UIColor.white.withAlphaComponent(0.3)
+            configureItemAppearance(
+                appearance,
+                selectedColor: .white,
+                normalColor: UIColor.white.withAlphaComponent(0.5)
+            )
+            
+            tabBar.isTranslucent = true
+            tabBar.backgroundColor = .clear
+            tabBar.barTintColor = nil
+            tabBar.backgroundImage = nil
+            tabBar.shadowImage = nil
+            tabBar.isOpaque = false
+            tabBar.tintColor = .white
+            tabBar.unselectedItemTintColor = UIColor.white.withAlphaComponent(0.5)
         } else {
-            // FLAG KAPALI: Klasik İşCep stili koyu lacivert
+            // FLAG KAPALI: Aynı tab bar formu, tam opak beyaz zemin (şeffaflık yok)
             appearance.configureWithOpaqueBackground()
-            appearance.backgroundColor = AppTheme.uiBackgroundDeep
-            appearance.shadowColor = .clear
+            appearance.backgroundEffect = nil
+            appearance.backgroundColor = .white
+            appearance.shadowColor = UIColor.lightGray.withAlphaComponent(0.3)
+            configureItemAppearance(
+                appearance,
+                selectedColor: AppTheme.uiAccent,
+                normalColor: .gray
+            )
+            
+            // Beyaz zemin üzerinde seçili sekme MAVİ (AppTheme.uiAccent), diğerleri GRİ
+            tabBar.isTranslucent = false
+            tabBar.backgroundColor = .white
+            tabBar.barTintColor = .white
+            tabBar.backgroundImage = nil
+            tabBar.shadowImage = nil
+            tabBar.isOpaque = true
+            tabBar.tintColor = AppTheme.uiAccent
+            tabBar.unselectedItemTintColor = .gray
         }
 
+        // Ayarları sisteme uygula
         tabBar.standardAppearance = appearance
         tabBar.scrollEdgeAppearance = appearance
-        tabBar.tintColor = AppTheme.uiAccent
-        tabBar.unselectedItemTintColor = UIColor.white.withAlphaComponent(0.5)
+        tabBar.items?.forEach { item in
+            item.standardAppearance = appearance
+            item.scrollEdgeAppearance = appearance
+        }
+        tabBar.setNeedsLayout()
+        tabBar.setNeedsDisplay()
+    }
+
+    private func configureItemAppearance(
+        _ appearance: UITabBarAppearance,
+        selectedColor: UIColor,
+        normalColor: UIColor
+    ) {
+        let itemAppearances = [
+            appearance.stackedLayoutAppearance,
+            appearance.inlineLayoutAppearance,
+            appearance.compactInlineLayoutAppearance
+        ]
+
+        itemAppearances.forEach { itemAppearance in
+            itemAppearance.normal.iconColor = normalColor
+            itemAppearance.normal.titleTextAttributes = [.foregroundColor: normalColor]
+            itemAppearance.selected.iconColor = selectedColor
+            itemAppearance.selected.titleTextAttributes = [.foregroundColor: selectedColor]
+        }
     }
     
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
 }
-
-

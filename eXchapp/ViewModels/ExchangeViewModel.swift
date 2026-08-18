@@ -4,7 +4,7 @@
 //
 //  Created by Cengizhan Özyurt on 6.08.2026.
 //
-
+/*/
 import Foundation
 import Combine
 
@@ -62,3 +62,4 @@ public final class ExchangeViewModel: ObservableObject {
         }
     }
 }
+*/
