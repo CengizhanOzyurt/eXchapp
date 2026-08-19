@@ -46,6 +46,12 @@ public final class RootTabBarController: UITabBarController {
         let convertHosting = UIHostingController(rootView: ConvertView())
         convertHosting.tabBarItem = UITabBarItem(title: "Çevirici", image: UIImage(systemName: "arrow.left.arrow.right"), selectedImage: UIImage(systemName: "arrow.left.arrow.right"))
 
+        let profileView = ProfileView(
+            onLoginPromptRequested: onLoginPromptRequested,
+            onRegisterPromptRequested: onRegisterPromptRequested
+            
+        )
+        
         let profileHosting = UIHostingController(rootView: ProfileView())
         profileHosting.tabBarItem = UITabBarItem(title: "Profil", image: UIImage(systemName: "person.fill"), selectedImage: UIImage(systemName: "person.fill"))
         

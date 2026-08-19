@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ConvertView: View {
+    @AppStorage("liquidGlassEnabled") private var isLiquidGlassEnabled = false
     @StateObject private var viewModel = CurrencyViewModel()
 
     @State private var amountText: String = "100"
@@ -15,34 +16,27 @@ struct ConvertView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                LinearGradient(
-                    colors: [Color(hex: "0B4DB7"), Color(hex: "082870"), Color(hex: "04123A")],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .ignoresSafeArea()
+                AppTheme.background(isLiquid: isLiquidGlassEnabled)
 
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 24) {
+                    VStack(spacing: 20) {
                         amountField
-
                         swapSelectors
-
                         resultCard
 
                         if viewModel.isLoading {
                             ProgressView()
-                                .tint(AppTheme.textPrimary)
+                                .tint(AppTheme.textPrimary(isLiquid: isLiquidGlassEnabled))
                         }
 
                         if let errorMessage = viewModel.errorMessage {
                             Text(errorMessage)
                                 .font(.caption)
-                                .foregroundColor(AppTheme.textSecondary)
+                                .foregroundColor(.red)
                                 .multilineTextAlignment(.center)
                         }
                     }
-                    .padding(20)
+                    .padding(16)
                 }
             }
             
@@ -51,22 +45,21 @@ struct ConvertView: View {
                 ToolbarItem(placement: .principal) {
                     Text("Kur Çevirici")
                         .font(.headline)
-                        .foregroundColor(.white)
+                        .foregroundColor(AppTheme.barForeground(isLiquid: isLiquidGlassEnabled))
                 }
             }
         }
-        .preferredColorScheme(.dark)
     }
 
     private var amountField: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Miktar")
                 .font(.caption)
-                .foregroundColor(AppTheme.textSecondary)
+                .foregroundColor(AppTheme.textSecondary(isLiquid: isLiquidGlassEnabled))
             TextField("0", text: $amountText)
                 .keyboardType(.decimalPad)
                 .font(.system(size: 34, weight: .bold))
-                .foregroundColor(AppTheme.textPrimary)
+                .foregroundColor(AppTheme.textPrimary(isLiquid: isLiquidGlassEnabled))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)
@@ -81,7 +74,7 @@ struct ConvertView: View {
                 swap(&fromID, &toID)
             } label: {
                 Image(systemName: "arrow.left.arrow.right")
-                    .foregroundColor(AppTheme.textPrimary)
+                    .foregroundColor(AppTheme.textPrimary(isLiquid: isLiquidGlassEnabled))
                     .padding(10)
                     .convertTransparentCard(cornerRadius: 12)
             }
@@ -99,13 +92,13 @@ struct ConvertView: View {
             ZStack {
                 Text(selection.wrappedValue)
                     .font(.headline)
-                    .foregroundColor(AppTheme.textPrimary)
+                    .foregroundColor(AppTheme.textPrimary(isLiquid: isLiquidGlassEnabled))
 
                 HStack {
                     Spacer()
                     Image(systemName: "chevron.down")
                         .font(.caption2)
-                        .foregroundColor(AppTheme.textSecondary)
+                        .foregroundColor(AppTheme.textSecondary(isLiquid: isLiquidGlassEnabled))
                         .padding(.trailing, 14)
                 }
             }
@@ -118,13 +111,13 @@ struct ConvertView: View {
         VStack(spacing: 6) {
             Text("Sonuç")
                 .font(.caption)
-                .foregroundColor(AppTheme.textSecondary)
+                .foregroundColor(AppTheme.textSecondary(isLiquid: isLiquidGlassEnabled))
             Text(String(format: "%.2f %@", result, toID))
                 .font(.system(size: 30, weight: .bold))
                 .foregroundColor(.yellow)
             Text("1 \(fromID) ≈ \(String(format: "%.4f", viewModel.convert(amount: 1, from: fromID, to: toID))) \(toID)")
                 .font(.caption)
-                .foregroundColor(AppTheme.textSecondary)
+                .foregroundColor(AppTheme.textSecondary(isLiquid: isLiquidGlassEnabled))
         }
         .frame(maxWidth: .infinity)
         .padding(20)

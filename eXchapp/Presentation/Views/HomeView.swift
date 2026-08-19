@@ -7,18 +7,18 @@
 
 import SwiftUI
 
-// MARK: - Home View
 public struct HomeView: View {
-    
+    @AppStorage("liquidGlassEnabled") private var isLiquidGlassEnabled = false
     @StateObject private var viewModel = CurrencyViewModel()
+    @StateObject private var authManager = AuthManager.shared
+    
     @State private var showLoginAlert: Bool = false
-    @State private var navigateToConvert: Bool = false
     @State private var selectedTopTab: Int = 0
     
     public var onLoginPromptRequested: (() -> Void)?
     public var onRegisterPromptRequested: (() -> Void)?
     
-    public init (onLoginPromptRequested: (() -> Void)? = nil, onRegisterPromptRequested: (() -> Void)? = nil) {
+    public init(onLoginPromptRequested: (() -> Void)? = nil, onRegisterPromptRequested: (() -> Void)? = nil) {
         self.onLoginPromptRequested = onLoginPromptRequested
         self.onRegisterPromptRequested = onRegisterPromptRequested
     }
@@ -31,105 +31,144 @@ public struct HomeView: View {
     
     public var body: some View {
         ZStack(alignment: .bottom) {
-            
-            LinearGradient(
-                colors: [Color(hex: "0B4DB7"), Color(hex: "082870"), Color(hex: "04123A")],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            AppTheme.background(isLiquid: isLiquidGlassEnabled)
             
             VStack(spacing: 0) {
-                
+                // Header
                 HStack(spacing: 12) {
-                    Button(action: { showLoginAlert = true }) {
+                    Button(action: {
+                        if !authManager.isLoggedIn { showLoginAlert = true }
+                    }) {
                         Image(systemName: "person.circle.fill")
                             .font(.system(size: 36))
-                            .foregroundStyle(.white)
+                            .foregroundColor(AppTheme.barForeground(isLiquid: isLiquidGlassEnabled))
                     }
                     
                     HStack {
                         Image(systemName: "magnifyingglass")
-                            .foregroundColor(.gray)
+                            .foregroundColor(isLiquidGlassEnabled ? .gray : AppTheme.isCepNavy.opacity(0.6))
                         Text("İşlem Ara")
-                            .foregroundColor(.gray.opacity(0.8))
+                            .foregroundColor(isLiquidGlassEnabled ? .gray.opacity(0.8) : Color.gray)
                             .font(.subheadline)
                         Spacer()
                     }
                     .padding(10)
-                    .background(Color.white)
+                    .background(isLiquidGlassEnabled ? Color.white : Color.white)
                     .cornerRadius(20)
+                    .shadow(color: Color.black.opacity(isLiquidGlassEnabled ? 0.0 : 0.05), radius: 4)
                     
-                    Button(action: { showLoginAlert = true }) {
+                    Button(action: {
+                        if !authManager.isLoggedIn { showLoginAlert = true }
+                    }) {
                         Image(systemName: "bell.fill")
                             .font(.system(size: 20))
-                            .foregroundColor(.white)
+                            .foregroundColor(AppTheme.barForeground(isLiquid: isLiquidGlassEnabled))
                             .padding(8)
                     }
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
+                .padding(.bottom, 12)
                 
-                topTabBar
-                    .padding(.top, 16)
+                if authManager.isLoggedIn {
+                    topTabBar
+                        .padding(.top, 4)
+                } else {
+                    Rectangle()
+                        .foregroundColor(.white)
+                        .frame(height: 3)
+                }
                 
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 20) {
+                    VStack(spacing: 16) {
                         
-                        VStack(alignment: .leading, spacing: 12) {
-                            HStack {
-                                Text("Maaş Hesabım")
-                                    .font(.subheadline)
-                                    .foregroundColor(.white.opacity(0.8))
-                                Spacer()
-                                Image(systemName: "chevron.down")
-                                    .foregroundColor(.white.opacity(0.8))
+                        if authManager.isLoggedIn {
+                            // Giriş Yapılmış Durum
+                            VStack(alignment: .leading, spacing: 10) {
+                                HStack {
+                                    Text("Maaş Hesabım")
+                                        .font(.subheadline)
+                                        .foregroundColor(AppTheme.textSecondary(isLiquid: isLiquidGlassEnabled))
+                                    Spacer()
+                                    Image(systemName: "chevron.down")
+                                        .foregroundColor(AppTheme.textSecondary(isLiquid: isLiquidGlassEnabled))
+                                }
+                                Text("**1480 7332 20**")
+                                    .font(.caption)
+                                    .foregroundColor(AppTheme.textSecondary(isLiquid: isLiquidGlassEnabled).opacity(0.8))
+                                
+                                Text("Bakiyeniz")
+                                    .font(.caption)
+                                    .foregroundColor(AppTheme.textSecondary(isLiquid: isLiquidGlassEnabled))
+                                    .padding(.top, 2)
+                                
+                                HStack {
+                                    Text(String(format: "%.2f TL", authManager.currentUser?.balance ?? 0.0))
+                                        .font(.system(size: 26, weight: .bold))
+                                        .foregroundColor(AppTheme.textPrimary(isLiquid: isLiquidGlassEnabled))
+                                    Image(systemName: "chevron.right")
+                                        .foregroundColor(AppTheme.textPrimary(isLiquid: isLiquidGlassEnabled))
+                                }
                             }
-                            Text("**1480 7332 20**")
-                                .font(.caption)
-                                .foregroundColor(.white.opacity(0.6))
+                            .padding(18)
+                            .appCard(isLiquid: isLiquidGlassEnabled, cornerRadius: 16)
+                            .padding(.horizontal, 16)
+                            .padding(.top, 10)
                             
-                            Spacer().frame(height: 4)
-                            
-                            Text("Bakiyeniz")
-                                .font(.caption)
-                                .foregroundColor(.white.opacity(0.7))
-                            
-                            HStack {
-                                Text("150.000,00 TL")
-                                    .font(.system(size: 26, weight: .bold))
-                                    .foregroundColor(.white)
-                                Image(systemName: "chevron.right")
-                                    .foregroundColor(.white)
+                            HStack(spacing: 12) {
+                                QuickActionButton(icon: "arrow.left.arrow.right", title: "Para Aktar", isLiquid: isLiquidGlassEnabled) { }
+                                QuickActionButton(icon: "creditcard.fill", title: "Ödemeler", isLiquid: isLiquidGlassEnabled) { }
+                                QuickActionButton(icon: "square.and.arrow.up", title: "IBAN Paylaş", isLiquid: isLiquidGlassEnabled) { }
+                                QuickActionButton(icon: "ellipsis", title: "Daha Fazlası", isLiquid: isLiquidGlassEnabled) { }
                             }
+                            .padding(.horizontal, 16)
                             
-                            Text("Kullanılabilir Ek Hesap Bakiye: **14.023,00 TL**")
-                                .font(.caption2)
-                                .foregroundColor(.white.opacity(0.7))
+                        } else {
+                            // Misafir Durumu
+                            VStack(spacing: 12) {
+                                Image(systemName: "lock.shield.fill")
+                                    .font(.system(size: 36))
+                                    .foregroundColor(isLiquidGlassEnabled ? .white.opacity(0.9) : AppTheme.isCepNavy)
+                                
+                                Text("Hesap Bilgilerinizi Görüntüleyin")
+                                    .font(.system(size: 16, weight: .bold))
+                                    .foregroundColor(AppTheme.textPrimary(isLiquid: isLiquidGlassEnabled))
+                                
+                                Text("Varlıklarınızı ve transfer işlemlerinizi görüntülemek için lütfen giriş yapınız.")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(AppTheme.textSecondary(isLiquid: isLiquidGlassEnabled))
+                                    .multilineTextAlignment(.center)
+                                
+                                Button {
+                                    onLoginPromptRequested?()
+                                } label: {
+                                    Text("Giriş Yap veya Kaydol")
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundColor(isLiquidGlassEnabled ? .black : .white)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 44)
+                                        .background(isLiquidGlassEnabled ? Color.white : AppTheme.isCepNavy)
+                                        .cornerRadius(12)
+                                }
+                                .padding(.top, 4)
+                            }
+                            .padding(20)
+                            .background(Color.white.opacity(0.2))
+                            .cornerRadius(14)
+                            .padding(.horizontal, 16)
+                            .padding(.top, 10)
                         }
-                        .padding(18)
-                        .background(Color.white.opacity(0.15))
-                        .cornerRadius(16)
-                        .padding(.horizontal, 16)
-                        .padding(.top, 16)
                         
-                        HStack(spacing: 12) {
-                            QuickActionButton(icon: "arrow.left.arrow.right", title: "Para Aktar") { showLoginAlert = true }
-                            QuickActionButton(icon: "creditcard.fill", title: "Ödemeler") { showLoginAlert = true }
-                            QuickActionButton(icon: "square.and.arrow.up", title: "IBAN Paylaş") { showLoginAlert = true }
-                            QuickActionButton(icon: "ellipsis", title: "Daha Fazlası") { showLoginAlert = true }
-                        }
-                        .padding(.horizontal, 16)
-                        
+                        // Piyasa Kurları
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Piyasa Kurları")
                                 .font(.headline)
-                                .foregroundColor(.white)
+                                .foregroundColor(AppTheme.textPrimary(isLiquid: isLiquidGlassEnabled))
                                 .padding(.horizontal, 16)
                             
                             if viewModel.isLoading {
                                 ProgressView()
-                                    .tint(.white)
+                                    .tint(AppTheme.textPrimary(isLiquid: isLiquidGlassEnabled))
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 20)
                             } else {
@@ -141,11 +180,11 @@ public struct HomeView: View {
                                             
                                             VStack(alignment: .leading, spacing: 2) {
                                                 Text(currency.id)
-                                                    .fontWeight(.bold)
-                                                    .foregroundColor(.white)
+                                                    .font(.system(size: 16, weight: .bold))
+                                                    .foregroundColor(AppTheme.textPrimary(isLiquid: isLiquidGlassEnabled))
                                                 Text(currency.name)
                                                     .font(.caption2)
-                                                    .foregroundColor(.white.opacity(0.6))
+                                                    .foregroundColor(AppTheme.textSecondary(isLiquid: isLiquidGlassEnabled))
                                             }
                                             
                                             Spacer()
@@ -153,7 +192,8 @@ public struct HomeView: View {
                                             VStack(alignment: .trailing, spacing: 2) {
                                                 Text(String(format: "%.2f TL", currency.sellRate))
                                                     .font(.system(size: 15, weight: .semibold))
-                                                    .foregroundColor(.white)
+                                                    .foregroundColor(AppTheme.textPrimary(isLiquid: isLiquidGlassEnabled))
+                                                
                                                 HStack(spacing: 2) {
                                                     if currency.changePercent > 0 {
                                                         Image(systemName: "arrow.up.right")
@@ -168,82 +208,78 @@ public struct HomeView: View {
                                                 .font(.system(size: 12, weight: .medium))
                                                 .foregroundColor(
                                                     currency.changePercent > 0 ? .green :
-                                                        currency.changePercent < 0 ? .red :
-                                                            .white.opacity(0.6)
+                                                    currency.changePercent < 0 ? .red :
+                                                    AppTheme.textSecondary(isLiquid: isLiquidGlassEnabled)
                                                 )
                                             }
                                         }
                                         .padding(.horizontal, 16)
-                                        .padding(.vertical, 10)
-                                        //.glassCard(cornerRadius: 15).opacity(0.6)
-                                        .background(Color.white.opacity(0.1))
-                                        .cornerRadius(12)
+                                        .padding(.vertical, 12)
+                                        .appCard(isLiquid: isLiquidGlassEnabled, cornerRadius: 14)
                                     }
                                 }
                                 .padding(.horizontal, 16)
                             }
                         }
-                        .padding(.top, 10)
+                        .padding(.top, 6)
                     }
                 }
             }
         }
-        .alert("Hesap Gerekli", isPresented: $showLoginAlert) {
-            Button("Giriş Yap") {
-                onLoginPromptRequested?()
-            }
+        .alert("Giriş Yapmanız Gerekiyor", isPresented: $showLoginAlert) {
+            Button("Giriş Yap") { onLoginPromptRequested?() }
             Button("Vazgeç", role: .cancel) { }
         } message: {
-            Text("Devam etmek için hesabınıza giriş yapın veya yeni bir hesap oluşturun.")
+            Text("Lütfen işlemlerinizi gerçekleştirmek veya profilinizi görmek için giriş yapınız.")
         }
     }
+    
     private var topTabBar: some View {
-            HStack(spacing: 0) {
-                ForEach(Array(topTabs.enumerated()), id: \.offset) { index, tab in
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            selectedTopTab = index
-                        }
-                    } label: {
-                        VStack(spacing: 8) {
-                            Image(systemName: tab.icon)
-                                .font(.system(size: 18, weight: .medium))
-
-                            Text(tab.title)
-                                .font(.system(size: 13, weight: selectedTopTab == index ? .semibold : .regular))
-
-                            Rectangle()
-                                .fill(selectedTopTab == index ? Color.white : Color.clear)
-                                .frame(height: 2)
-                                .padding(.horizontal, 8)
-                        }
-                        .foregroundColor(selectedTopTab == index ? .white : .white.opacity(0.6))
-                        .frame(maxWidth: .infinity)
+        HStack(spacing: 0) {
+            ForEach(Array(topTabs.enumerated()), id: \.offset) { index, tab in
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) { selectedTopTab = index }
+                } label: {
+                    VStack(spacing: 6) {
+                        Image(systemName: tab.icon)
+                            .font(.system(size: 18, weight: .medium))
+                        Text(tab.title)
+                            .font(.system(size: 13, weight: selectedTopTab == index ? .semibold : .regular))
+                        Rectangle()
+                            .fill(selectedTopTab == index ? (isLiquidGlassEnabled ? Color.white : AppTheme.isCepNavy) : Color.clear)
+                            .frame(height: 2)
+                            .padding(.horizontal, 8)
                     }
+                    .foregroundColor(selectedTopTab == index ? (isLiquidGlassEnabled ? .white : AppTheme.isCepNavy) : AppTheme.textSecondary(isLiquid: isLiquidGlassEnabled))
+                    .frame(maxWidth: .infinity)
                 }
             }
-            .padding(.horizontal, 16)
         }
+        .padding(.horizontal, 16)
+    }
 }
 
-// MARK: - Subcomponents
+// MARK: - Quick Action Button
 struct QuickActionButton: View {
     let icon: String
     let title: String
+    let isLiquid: Bool
     let action: () -> Void
     
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 8) {
+            VStack(spacing: 6) {
                 Image(systemName: icon)
-                    .font(.system(size: 20))
-                    .foregroundColor(.white)
-                    .frame(width: 45, height: 45)
-                    .background(Color.white.opacity(0.2))
+                    .font(.system(size: 18))
+                    .foregroundColor(isLiquid ? .white : AppTheme.isCepNavy)
+                    .frame(width: 44, height: 44)
+                    .background(isLiquid ? Color.white.opacity(0.12) : Color.white)
                     .cornerRadius(12)
+                    .shadow(color: Color.black.opacity(isLiquid ? 0.0 : 0.05), radius: 4)
+                
                 Text(title)
                     .font(.caption2)
-                    .foregroundColor(.white)
+                    .foregroundColor(AppTheme.textPrimary(isLiquid: isLiquid))
                     .lineLimit(1)
             }
             .frame(maxWidth: .infinity)
@@ -251,39 +287,6 @@ struct QuickActionButton: View {
     }
 }
 
-struct TabBarItem: View {
-    let icon: String
-    let title: String
-    let isSelected: Bool
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: 4) {
-                Image(systemName: icon)
-                    .font(.system(size: 20))
-                    .foregroundColor(isSelected ? .blue : .gray)
-                Text(title)
-                    .font(.caption2)
-                    .foregroundColor(isSelected ? .blue : .gray)
-            }
-        }
-    }
-}
-
-// MARK: - Color Extension for Hex Support
-public extension Color {
-    init(hex: String) {
-        let scanner = Scanner(string: hex)
-        var hexNumber: UInt64 = 0
-        scanner.scanHexInt64(&hexNumber)
-        let r = Double((hexNumber & 0xff0000) >> 16) / 255
-        let g = Double((hexNumber & 0x00ff00) >> 8) / 255
-        let b = Double(hexNumber & 0x0000ff) / 255
-        self.init(.sRGB, red: r, green: g, blue: b, opacity: 1.0)
-    }
-}
-
-#Preview {
+#Preview{
     HomeView()
 }

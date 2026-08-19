@@ -8,71 +8,118 @@
 import SwiftUI
 import UIKit
 
-public enum AppTheme {
-    public static let backgroundDeep = Color(red: 0.03, green: 0.07, blue: 0.20)
-    public static let backgroundMid = Color(red: 0.06, green: 0.16, blue: 0.42)
-    public static let backgroundBright = Color(red: 0.11, green: 0.30, blue: 0.72)
-
-    public static let cardSurface = Color.white.opacity(0.08)
-    public static let cardStroke = Color.white.opacity(0.14)
-
-    public static let accent = Color(red: 0.18, green: 0.47, blue: 0.95)
-    public static let textPrimary = Color.white
-    public static let textSecondary = Color.white.opacity(0.65)
-
-    public static var backgroundGradient: LinearGradient {
-        LinearGradient(
-            colors: [backgroundDeep, backgroundMid, backgroundBright],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
+// MARK: - Color Hex Extension (Global Ulaşılabilir)
+public extension Color {
+    init(hex: String) {
+        let scanner = Scanner(string: hex)
+        var hexNumber: UInt64 = 0
+        scanner.scanHexInt64(&hexNumber)
+        let r = Double((hexNumber & 0xff0000) >> 16) / 255
+        let g = Double((hexNumber & 0x00ff00) >> 8) / 255
+        let b = Double(hexNumber & 0x0000ff) / 255
+        self.init(.sRGB, red: r, green: g, blue: b, opacity: 1.0)
     }
-
-    public static let uiBackgroundDeep = UIColor(backgroundDeep)
-    public static let uiAccent = UIColor(accent)
 }
 
-public struct GlassCardModifier: ViewModifier {
-    public var cornerRadius: CGFloat = 20
-
-    public func body(content: Content) -> some View {
-        if FeatureFlags.liquidGlassEnabled {
-            content
-                .background(
-                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .fill(.clear)
-                )
-                .modifier(LiquidGlassBackground(cornerRadius: cornerRadius))
+public enum AppTheme {
+    // MARK: - Kurumsal İşCep Renkleri
+    public static let isCepNavy = Color(hex: "082870")
+    public static let isCepBlue = Color(hex: "0B4DB7")
+    public static let isCepDark = Color(hex: "04123A")
+    public static let isCepBackgroundGray = Color(hex: "F4F6F9")
+    public static let isCepAccent = Color(hex: "0052CC")
+    
+    public static let uiAccent = UIColor(isCepAccent)
+    public static let uiNavy = UIColor(isCepNavy)
+    
+    // MARK: - Dinamik Arka Plan
+    @ViewBuilder
+    public static func background(isLiquid: Bool) -> some View {
+        if isLiquid {
+            LinearGradient(
+                colors: [isCepBlue, isCepNavy, isCepDark],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
         } else {
-            content
-                .background(
-                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .fill(AppTheme.cardSurface)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                                .stroke(AppTheme.cardStroke, lineWidth: 1)
-                        )
-                )
+            LinearGradient(
+                colors: [isCepBlue, isCepNavy, isCepDark],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
         }
     }
+    
+    // MARK: - Dinamik Metin & İkon Renkleri
+    public static func textPrimary(isLiquid: Bool) -> Color {
+        isLiquid ? .white : Color(hex: "1A1D20")
+    }
+    
+    public static func textSecondary(isLiquid: Bool) -> Color {
+        isLiquid ? Color.white.opacity(0.65) : Color(hex: "6C757D")
+    }
+    
+    public static func barForeground(isLiquid: Bool) -> Color {
+        isLiquid ? .white : isCepNavy
+    }
 }
 
-private struct LiquidGlassBackground: ViewModifier {
+// MARK: - Dinamik Kart Stili (Liquid Glass vs. İşCep Beyazı)
+public struct DynamicCardModifier: ViewModifier {
+    let isLiquid: Bool
     let cornerRadius: CGFloat
 
     public func body(content: Content) -> some View {
-        if #available(iOS 26.0, *) {
+        if isLiquid {
             content
-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+                .background(
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.white.opacity(0.08), Color.white.opacity(0.02)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(0.45),
+                                    Color.white.opacity(0.10),
+                                    Color.clear,
+                                    Color.white.opacity(0.20)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                )
+                .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
+            
+        
         } else {
             content
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+                .background(
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .fill(Color.white)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .stroke(Color.black.opacity(0.05), lineWidth: 1)
+                )
+                .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 2)
         }
     }
 }
 
 public extension View {
-    func glassCard(cornerRadius: CGFloat = 20) -> some View {
-        modifier(GlassCardModifier(cornerRadius: cornerRadius))
+    func appCard(isLiquid: Bool, cornerRadius: CGFloat = 16) -> some View {
+        modifier(DynamicCardModifier(isLiquid: isLiquid, cornerRadius: cornerRadius))
     }
 }
