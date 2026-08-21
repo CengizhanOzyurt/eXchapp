@@ -44,7 +44,7 @@ public struct HomeView: View {
                             .foregroundColor(AppTheme.barForeground(isLiquid: isLiquidGlassEnabled))
                     }
                     
-                    HStack {
+                    HStack { 
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(isLiquidGlassEnabled ? .gray : AppTheme.isCepNavy.opacity(0.6))
                         Text("İşlem Ara")
@@ -147,23 +147,22 @@ public struct HomeView: View {
                                         .foregroundColor(isLiquidGlassEnabled ? .black : .white)
                                         .frame(maxWidth: .infinity)
                                         .frame(height: 44)
-                                        .background(isLiquidGlassEnabled ? Color.white : AppTheme.isCepNavy)
+                                        .background(isLiquidGlassEnabled ? Color.white : AppTheme.isCepButton)
                                         .cornerRadius(12)
                                 }
                                 .padding(.top, 4)
                             }
                             .padding(20)
-                            .background(Color.white.opacity(0.2))
+                            .appCard(isLiquid: isLiquidGlassEnabled)
                             .cornerRadius(14)
                             .padding(.horizontal, 16)
                             .padding(.top, 10)
                         }
                         
-                        // Piyasa Kurları
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Piyasa Kurları")
                                 .font(.headline)
-                                .foregroundColor(AppTheme.textPrimary(isLiquid: isLiquidGlassEnabled))
+                                .foregroundColor(AppTheme.textWhite(isLiquid: isLiquidGlassEnabled))
                                 .padding(.horizontal, 16)
                             
                             if viewModel.isLoading {
@@ -174,48 +173,55 @@ public struct HomeView: View {
                             } else {
                                 VStack(spacing: 8) {
                                     ForEach(viewModel.currencies) { currency in
-                                        HStack(spacing: 12) {
-                                            Text(currency.flagEmoji)
-                                                .font(.title2)
-                                            
-                                            VStack(alignment: .leading, spacing: 2) {
-                                                Text(currency.id)
-                                                    .font(.system(size: 16, weight: .bold))
-                                                    .foregroundColor(AppTheme.textPrimary(isLiquid: isLiquidGlassEnabled))
-                                                Text(currency.name)
-                                                    .font(.caption2)
-                                                    .foregroundColor(AppTheme.textSecondary(isLiquid: isLiquidGlassEnabled))
+                                        Button {
+                                            if !authManager.isLoggedIn {
+                                                showLoginAlert = true
                                             }
-                                            
-                                            Spacer()
-                                            
-                                            VStack(alignment: .trailing, spacing: 2) {
-                                                Text(String(format: "%.2f TL", currency.sellRate))
-                                                    .font(.system(size: 15, weight: .semibold))
-                                                    .foregroundColor(AppTheme.textPrimary(isLiquid: isLiquidGlassEnabled))
+                                        } label: {
+                                            HStack(spacing: 12) {
+                                                Text(currency.flagEmoji)
+                                                    .font(.title2)
                                                 
-                                                HStack(spacing: 2) {
-                                                    if currency.changePercent > 0 {
-                                                        Image(systemName: "arrow.up.right")
-                                                        Text(String(format: "+%.2f%%", currency.changePercent))
-                                                    } else if currency.changePercent < 0 {
-                                                        Image(systemName: "arrow.down.right")
-                                                        Text(String(format: "%.2f%%", currency.changePercent))
-                                                    } else {
-                                                        Text("%0.00")
-                                                    }
+                                                VStack(alignment: .leading, spacing: 2) {
+                                                    Text(currency.id)
+                                                        .font(.system(size: 16, weight: .bold))
+                                                        .foregroundColor(AppTheme.textTertiary(isLiquid: isLiquidGlassEnabled))
+                                                    Text(currency.name)
+                                                        .font(.caption2)
+                                                        .foregroundColor(AppTheme.textSecondary(isLiquid: isLiquidGlassEnabled))
                                                 }
-                                                .font(.system(size: 12, weight: .medium))
-                                                .foregroundColor(
-                                                    currency.changePercent > 0 ? .green :
-                                                    currency.changePercent < 0 ? .red :
-                                                    AppTheme.textSecondary(isLiquid: isLiquidGlassEnabled)
-                                                )
+                                                
+                                                Spacer()
+                                                
+                                                VStack(alignment: .trailing, spacing: 2) {
+                                                    Text(String(format: "%.2f TL", currency.sellRate))
+                                                        .font(.system(size: 15, weight: .semibold))
+                                                        .foregroundColor(AppTheme.textPrimary(isLiquid: isLiquidGlassEnabled))
+                                                    
+                                                    HStack(spacing: 2) {
+                                                        if currency.changePercent > 0 {
+                                                            Image(systemName: "arrow.up.right")
+                                                            Text(String(format: "+%.2f%%", currency.changePercent))
+                                                        } else if currency.changePercent < 0 {
+                                                            Image(systemName: "arrow.down.right")
+                                                            Text(String(format: "%.2f%%", currency.changePercent))
+                                                        } else {
+                                                            Text("%0.00")
+                                                        }
+                                                    }
+                                                    .font(.system(size: 12, weight: .medium))
+                                                    .foregroundColor(
+                                                        currency.changePercent > 0 ? .green :
+                                                        currency.changePercent < 0 ? .red :
+                                                        AppTheme.textSecondary(isLiquid: isLiquidGlassEnabled)
+                                                    )
+                                                }
                                             }
+                                            .padding(.horizontal, 16)
+                                            .padding(.vertical, 12)
+                                            .appCard(isLiquid: isLiquidGlassEnabled, cornerRadius: 14)
                                         }
-                                        .padding(.horizontal, 16)
-                                        .padding(.vertical, 12)
-                                        .appCard(isLiquid: isLiquidGlassEnabled, cornerRadius: 14)
+                                        .buttonStyle(.plain)
                                     }
                                 }
                                 .padding(.horizontal, 16)
@@ -227,7 +233,11 @@ public struct HomeView: View {
             }
         }
         .alert("Giriş Yapmanız Gerekiyor", isPresented: $showLoginAlert) {
-            Button("Giriş Yap") { onLoginPromptRequested?() }
+            Button("Giriş Yap") {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    onLoginPromptRequested?()
+                }
+            }
             Button("Vazgeç", role: .cancel) { }
         } message: {
             Text("Lütfen işlemlerinizi gerçekleştirmek veya profilinizi görmek için giriş yapınız.")

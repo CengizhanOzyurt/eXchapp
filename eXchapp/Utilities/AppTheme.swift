@@ -23,11 +23,13 @@ public extension Color {
 
 public enum AppTheme {
     // MARK: - Kurumsal İşCep Renkleri
+    public static let isCepButton = Color(hex: "0D6CB5")
     public static let isCepNavy = Color(hex: "082870")
     public static let isCepBlue = Color(hex: "0B4DB7")
     public static let isCepDark = Color(hex: "04123A")
     public static let isCepBackgroundGray = Color(hex: "F4F6F9")
     public static let isCepAccent = Color(hex: "0052CC")
+    public static let isCepWhite = Color(hex: "ffffff")
     
     public static let uiAccent = UIColor(isCepAccent)
     public static let uiNavy = UIColor(isCepNavy)
@@ -54,15 +56,21 @@ public enum AppTheme {
     
     // MARK: - Dinamik Metin & İkon Renkleri
     public static func textPrimary(isLiquid: Bool) -> Color {
-        isLiquid ? .white : Color(hex: "1A1D20")
+        isLiquid ? .white : Color(hex: "525252")
     }
     
     public static func textSecondary(isLiquid: Bool) -> Color {
         isLiquid ? Color.white.opacity(0.65) : Color(hex: "6C757D")
     }
+    public static func textTertiary(isLiquid: Bool) -> Color {
+        isLiquid ? .white : Color(hex: "0E0B70")
+    }
+    public static func textWhite(isLiquid: Bool) -> Color {
+        isLiquid ? .white : Color(hex: "FFFFFF")
+    }
     
     public static func barForeground(isLiquid: Bool) -> Color {
-        isLiquid ? .white : isCepNavy
+        isLiquid ? .white : .white
     }
 }
 
@@ -78,7 +86,7 @@ public struct DynamicCardModifier: ViewModifier {
                     RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                         .fill(
                             LinearGradient(
-                                colors: [Color.white.opacity(0.08), Color.white.opacity(0.02)],
+                                colors: [Color.white.opacity(0.08), Color.white.opacity(0.1)],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
@@ -102,7 +110,7 @@ public struct DynamicCardModifier: ViewModifier {
                 )
                 .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
             
-        
+            
         } else {
             content
                 .background(

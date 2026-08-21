@@ -14,6 +14,19 @@ public final class RootTabBarController: UITabBarController {
 
     public var onLoginPromptRequested: (() -> Void)?
     public var onRegisterPromptRequested: (() -> Void)?
+
+    public init(
+        onLoginPromptRequested: (() -> Void)? = nil,
+        onRegisterPromptRequested: (() -> Void)? = nil
+    ) {
+        self.onLoginPromptRequested = onLoginPromptRequested
+        self.onRegisterPromptRequested = onRegisterPromptRequested
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
     
     override public func viewDidLoad() {
         super.viewDidLoad()
@@ -49,10 +62,8 @@ public final class RootTabBarController: UITabBarController {
         let profileView = ProfileView(
             onLoginPromptRequested: onLoginPromptRequested,
             onRegisterPromptRequested: onRegisterPromptRequested
-            
         )
-        
-        let profileHosting = UIHostingController(rootView: ProfileView())
+        let profileHosting = UIHostingController(rootView: profileView)
         profileHosting.tabBarItem = UITabBarItem(title: "Profil", image: UIImage(systemName: "person.fill"), selectedImage: UIImage(systemName: "person.fill"))
         
         let settingsHosting = UIHostingController(rootView: SettingsView())

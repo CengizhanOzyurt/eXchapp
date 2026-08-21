@@ -44,7 +44,7 @@ struct ConvertView: View {
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Text("Kur Çevirici")
-                        .font(.headline)
+                        .font(.title2).bold()
                         .foregroundColor(AppTheme.barForeground(isLiquid: isLiquidGlassEnabled))
                 }
             }
@@ -59,11 +59,11 @@ struct ConvertView: View {
             TextField("0", text: $amountText)
                 .keyboardType(.decimalPad)
                 .font(.system(size: 34, weight: .bold))
-                .foregroundColor(AppTheme.textPrimary(isLiquid: isLiquidGlassEnabled))
+                .foregroundColor(AppTheme.textTertiary(isLiquid: isLiquidGlassEnabled))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)
-        .convertTransparentCard(cornerRadius: 18)
+        .appCard(isLiquid: isLiquidGlassEnabled)
     }
 
     private var swapSelectors: some View {
@@ -74,9 +74,9 @@ struct ConvertView: View {
                 swap(&fromID, &toID)
             } label: {
                 Image(systemName: "arrow.left.arrow.right")
-                    .foregroundColor(AppTheme.textPrimary(isLiquid: isLiquidGlassEnabled))
+                    .foregroundColor(AppTheme.textTertiary(isLiquid: isLiquidGlassEnabled))
                     .padding(10)
-                    .convertTransparentCard(cornerRadius: 12)
+                    .appCard(isLiquid: isLiquidGlassEnabled)
             }
 
             currencyPicker(selection: $toID)
@@ -104,7 +104,7 @@ struct ConvertView: View {
             }
             .frame(maxWidth: .infinity, minHeight: 48)
         }
-        .convertTransparentCard(cornerRadius: 14)
+        .appCard(isLiquid: isLiquidGlassEnabled)
     }
 
     private var resultCard: some View {
@@ -114,14 +114,14 @@ struct ConvertView: View {
                 .foregroundColor(AppTheme.textSecondary(isLiquid: isLiquidGlassEnabled))
             Text(String(format: "%.2f %@", result, toID))
                 .font(.system(size: 30, weight: .bold))
-                .foregroundColor(.yellow)
+                .foregroundColor(.orange)
             Text("1 \(fromID) ≈ \(String(format: "%.4f", viewModel.convert(amount: 1, from: fromID, to: toID))) \(toID)")
                 .font(.caption)
                 .foregroundColor(AppTheme.textSecondary(isLiquid: isLiquidGlassEnabled))
         }
         .frame(maxWidth: .infinity)
         .padding(20)
-        .convertTransparentCard(cornerRadius: 18)
+        .appCard(isLiquid: isLiquidGlassEnabled)
     }
 }
 

@@ -53,7 +53,6 @@ public struct ProfileView: View {
                             }
                         }
 
-                        // Hesap Bilgisi Kartı
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Hesap Özeti")
                                 .font(.system(size: 14, weight: .semibold))
@@ -124,31 +123,16 @@ public struct ProfileView: View {
                                         .foregroundColor(isLiquidGlassEnabled ? .black : .white)
                                         .frame(maxWidth: .infinity)
                                         .frame(height: 48)
-                                        .background(isLiquidGlassEnabled ? Color.white : AppTheme.isCepNavy)
+                                        .background(isLiquidGlassEnabled ? Color.white : AppTheme.isCepButton)
                                         .cornerRadius(12)
                                 }
 
-                                Button {
-                                    onRegisterPromptRequested?()
-                                } label: {
-                                    Text("Kayıt Ol")
-                                        .font(.system(size: 14, weight: .semibold))
-                                        .foregroundColor(AppTheme.textPrimary(isLiquid: isLiquidGlassEnabled))
-                                        .frame(maxWidth: .infinity)
-                                        .frame(height: 44)
-                                        .background(isLiquidGlassEnabled ? Color.white.opacity(0.1) : Color.white)
-                                        .cornerRadius(12)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 12)
-                                                .stroke(isLiquidGlassEnabled ? Color.white.opacity(0.2) : Color.black.opacity(0.1), lineWidth: 1)
-                                        )
-                                }
+                                
                             }
                             .padding(.top, 10)
                         }
                         .padding(24)
-                        .background(Color.white.opacity(0.2))
-                        .cornerRadius(14)
+                        .appCard(isLiquid: isLiquidGlassEnabled)
                         .padding(.horizontal, 16)
                         .padding(.top, 40)
                     }

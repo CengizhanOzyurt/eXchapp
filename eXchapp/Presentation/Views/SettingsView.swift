@@ -26,12 +26,11 @@ public struct SettingsView: View {
                     .padding(.horizontal)
                     .padding(.top, 20)
                 
-                // ÇÖZÜM: Yazılar ve Toggle birbirinden ayrıldı
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Liquid Glass Efekti")
                             .font(.headline)
-                            .foregroundColor(isLiquidGlassEnabled ? .black : .black)
+                            .foregroundColor(isLiquidGlassEnabled ? .white : .black)
                         
                         Text(isLiquidGlassEnabled ? "Modern şeffaf cam görünümü aktif." : "Beyaz tasarım aktif.")
                             .font(.caption)
@@ -40,10 +39,10 @@ public struct SettingsView: View {
                     Spacer()
                     
                     Toggle("", isOn: $isLiquidGlassEnabled)
-                        .labelsHidden() // Toggle'ın kendi görünmez etiketini sildik
+                        .labelsHidden()
                 }
                 .padding()
-                .conditionalGlassBackground(cornerRadius: 16)
+                .appCard(isLiquid: isLiquidGlassEnabled)
                 .padding(.horizontal)
                 .onChange(of: isLiquidGlassEnabled) { newValue in
                                     NotificationCenter.default.post(name: NSNotification.Name("ThemeChangedNotification"), object: nil)
