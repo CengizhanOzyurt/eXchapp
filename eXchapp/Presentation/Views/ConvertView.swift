@@ -14,9 +14,16 @@ struct ConvertView: View {
     private var result: Double { viewModel.convert(amount: amount, from: fromID, to: toID) }
 
     var body: some View {
-        NavigationView {
-            ZStack {
-                AppTheme.background(isLiquid: isLiquidGlassEnabled)
+        ZStack {
+            AppTheme.background(isLiquid: isLiquidGlassEnabled)
+                .ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                Text("Kur Çevirici")
+                    .font(.title2.bold())
+                    .foregroundColor(AppTheme.barForeground(isLiquid: isLiquidGlassEnabled))
+                    .padding(.top, 12)
+                    .padding(.bottom, 8)
 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 20) {
@@ -37,15 +44,6 @@ struct ConvertView: View {
                         }
                     }
                     .padding(16)
-                }
-            }
-            
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Text("Kur Çevirici")
-                        .font(.title2).bold()
-                        .foregroundColor(AppTheme.barForeground(isLiquid: isLiquidGlassEnabled))
                 }
             }
         }
@@ -118,10 +116,12 @@ struct ConvertView: View {
             Text("1 \(fromID) ≈ \(String(format: "%.4f", viewModel.convert(amount: 1, from: fromID, to: toID))) \(toID)")
                 .font(.caption)
                 .foregroundColor(AppTheme.textSecondary(isLiquid: isLiquidGlassEnabled))
+            
         }
         .frame(maxWidth: .infinity)
         .padding(20)
         .appCard(isLiquid: isLiquidGlassEnabled)
+        
     }
 }
 

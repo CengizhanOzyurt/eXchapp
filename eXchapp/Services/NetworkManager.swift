@@ -37,24 +37,18 @@ public enum NetworkError: Error, LocalizedError {
 /// - Version: 1.0.0
 public final class NetworkManager {
     
-    /// Shared singleton instance for global network access.
     public static let shared = NetworkManager()
-    
     private let baseURL = "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/try.json"
-    
     private init() {}
     
-    /// Fetches the latest exchange rates asynchronously
     public func fetchLatestRates() async throws -> CurrencyResponse {
         guard let url = URL(string: baseURL) else {
             throw NetworkError.invalidURL
         }
         let (data, response) = try await URLSession.shared.data(from: url)
-        
         if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
             throw NetworkError.serverError(statusCode: httpResponse.statusCode)
         }
-        
         do {
             // Decode JSON data
             let decodedResponse = try JSONDecoder().decode(CurrencyResponse.self, from: data)

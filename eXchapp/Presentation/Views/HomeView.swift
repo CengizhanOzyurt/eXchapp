@@ -14,6 +14,7 @@ public struct HomeView: View {
     
     @State private var showLoginAlert: Bool = false
     @State private var selectedTopTab: Int = 0
+    @State private var selectedCurrencyForTrade: Currency? = nil
     
     public var onLoginPromptRequested: (() -> Void)?
     public var onRegisterPromptRequested: (() -> Void)?
@@ -44,7 +45,7 @@ public struct HomeView: View {
                             .foregroundColor(AppTheme.barForeground(isLiquid: isLiquidGlassEnabled))
                     }
                     
-                    HStack { 
+                    HStack {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(isLiquidGlassEnabled ? .gray : AppTheme.isCepNavy.opacity(0.6))
                         Text("İşlem Ara")
@@ -88,6 +89,7 @@ public struct HomeView: View {
                                 HStack {
                                     Text("Maaş Hesabım")
                                         .font(.subheadline)
+                                        .bold()
                                         .foregroundColor(AppTheme.textSecondary(isLiquid: isLiquidGlassEnabled))
                                     Spacer()
                                     Image(systemName: "chevron.down")
@@ -176,6 +178,8 @@ public struct HomeView: View {
                                         Button {
                                             if !authManager.isLoggedIn {
                                                 showLoginAlert = true
+                                            } else {
+                                                selectedCurrencyForTrade = currency
                                             }
                                         } label: {
                                             HStack(spacing: 12) {
@@ -224,11 +228,14 @@ public struct HomeView: View {
                                         .buttonStyle(.plain)
                                     }
                                 }
-                                .padding(.horizontal, 16)
+                                .sheet(item: $selectedCurrencyForTrade) { selected in
+                                    TradeDetailView(currencyViewModel: viewModel, initialCurrency: selected)
+                                }
                             }
                         }
-                        .padding(.top, 6)
+                        .padding(.horizontal, 16)
                     }
+                    .padding(.top, 6)
                 }
             }
         }
@@ -241,6 +248,19 @@ public struct HomeView: View {
             Button("Vazgeç", role: .cancel) { }
         } message: {
             Text("Lütfen işlemlerinizi gerçekleştirmek veya profilinizi görmek için giriş yapınız.")
+        }
+        .onAppear {
+            // GEÇİCİ TEST KODU (DEBUG İÇİN)
+            // Eğer kullanıcı zaten giriş yapmamışsa, sisteme sahte bir kullanıcı veriyoruz.
+            if !authManager.isLoggedIn {
+                let dummyUser = UserSession(
+                    name: "Test",
+                    surname: "Kullanıcısı",
+                    mail: "test@exchapp.com",
+                    balance: 75000.0 // Test için 75.000 TL bakiye tanımlıyoruz
+                )
+                authManager.logIn(dummyUser)
+            }
         }
     }
     
@@ -256,11 +276,11 @@ public struct HomeView: View {
                         Text(tab.title)
                             .font(.system(size: 13, weight: selectedTopTab == index ? .semibold : .regular))
                         Rectangle()
-                            .fill(selectedTopTab == index ? (isLiquidGlassEnabled ? Color.white : AppTheme.isCepNavy) : Color.clear)
+                            .fill(selectedTopTab == index ? (true ? Color.white : AppTheme.isCepNavy) : Color.clear)
                             .frame(height: 2)
                             .padding(.horizontal, 8)
                     }
-                    .foregroundColor(selectedTopTab == index ? (isLiquidGlassEnabled ? .white : AppTheme.isCepNavy) : AppTheme.textSecondary(isLiquid: isLiquidGlassEnabled))
+                    .foregroundColor(selectedTopTab == index ? (true ? .white : AppTheme.isCepNavy) : .white.opacity(0.65))
                     .frame(maxWidth: .infinity)
                 }
             }
@@ -289,7 +309,7 @@ struct QuickActionButton: View {
                 
                 Text(title)
                     .font(.caption2)
-                    .foregroundColor(AppTheme.textPrimary(isLiquid: isLiquid))
+                    .foregroundColor(.white)
                     .lineLimit(1)
             }
             .frame(maxWidth: .infinity)

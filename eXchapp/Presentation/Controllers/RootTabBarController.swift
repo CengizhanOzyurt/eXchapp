@@ -8,8 +8,6 @@
 import UIKit
 import SwiftUI
 
-/// Uygulamanın UIKit iskeleti. Sekmelerin her biri SwiftUI ile yazılmış
-/// bir ekranı `UIHostingController` üzerinden barındırır.
 public final class RootTabBarController: UITabBarController {
 
     public var onLoginPromptRequested: (() -> Void)?
@@ -75,11 +73,9 @@ public final class RootTabBarController: UITabBarController {
     private func configureAppearance() {
         let appearance = UITabBarAppearance()
         
-        // MARK: - Dinamik Tasarım Geçişi
         let isLiquidGlass = FeatureFlags.liquidGlassEnabled
         
         if isLiquidGlass {
-            // FLAG AÇIK: Tam şeffaf cam efekti
             appearance.configureWithTransparentBackground()
             appearance.backgroundEffect = nil
             appearance.backgroundColor = UIColor.white.withAlphaComponent(0.15)
@@ -99,35 +95,45 @@ public final class RootTabBarController: UITabBarController {
             tabBar.tintColor = .white
             tabBar.unselectedItemTintColor = UIColor.white.withAlphaComponent(0.5)
         } else {
-            // FLAG KAPALI: Aynı tab bar formu, tam opak beyaz zemin (şeffaflık yok)
+            // FLAG KAPALI: Eski iOS tarzı, tamamen düz, opak ve beyaz tab bar
             appearance.configureWithOpaqueBackground()
             appearance.backgroundEffect = nil
             appearance.backgroundColor = .white
-            appearance.shadowColor = UIColor.lightGray.withAlphaComponent(0.3)
+            appearance.shadowColor = UIColor.systemGray5
+            
+            appearance.selectionIndicatorTintColor = .clear
+            
             configureItemAppearance(
                 appearance,
                 selectedColor: AppTheme.uiAccent,
                 normalColor: .gray
             )
             
-            // Beyaz zemin üzerinde seçili sekme MAVİ (AppTheme.uiAccent), diğerleri GRİ
             tabBar.isTranslucent = false
+            tabBar.isOpaque = true
             tabBar.backgroundColor = .white
             tabBar.barTintColor = .white
-            tabBar.backgroundImage = nil
-            tabBar.shadowImage = nil
-            tabBar.isOpaque = true
             tabBar.tintColor = AppTheme.uiAccent
             tabBar.unselectedItemTintColor = .gray
+            
+            // 💧 BALONCUK İMAJINI TEMİZLER
+            tabBar.selectionIndicatorImage = UIImage()
+            tabBar.backgroundImage = UIImage()
+            tabBar.shadowImage = UIImage()
         }
 
-        // Ayarları sisteme uygula
         tabBar.standardAppearance = appearance
-        tabBar.scrollEdgeAppearance = appearance
+        if #available(iOS 15.0, *) {
+            tabBar.scrollEdgeAppearance = appearance
+        }
+        
         tabBar.items?.forEach { item in
             item.standardAppearance = appearance
-            item.scrollEdgeAppearance = appearance
+            if #available(iOS 15.0, *) {
+                item.scrollEdgeAppearance = appearance
+            }
         }
+        
         tabBar.setNeedsLayout()
         tabBar.setNeedsDisplay()
     }
@@ -148,6 +154,7 @@ public final class RootTabBarController: UITabBarController {
             itemAppearance.normal.titleTextAttributes = [.foregroundColor: normalColor]
             itemAppearance.selected.iconColor = selectedColor
             itemAppearance.selected.titleTextAttributes = [.foregroundColor: selectedColor]
+            // Hatalı özellikler (backgroundColor) buradan kaldırıldı.
         }
     }
     

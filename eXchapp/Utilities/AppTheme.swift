@@ -56,7 +56,7 @@ public enum AppTheme {
     
     // MARK: - Dinamik Metin & İkon Renkleri
     public static func textPrimary(isLiquid: Bool) -> Color {
-        isLiquid ? .white : Color(hex: "525252")
+        isLiquid ? .white : Color(hex: "000000")
     }
     
     public static func textSecondary(isLiquid: Bool) -> Color {

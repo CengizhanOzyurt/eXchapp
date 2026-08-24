@@ -20,16 +20,17 @@ public struct ProfileView: View {
     }
 
     public var body: some View {
+        
         ZStack {
             AppTheme.background(isLiquid: isLiquidGlassEnabled)
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
-                    
                     if authManager.isLoggedIn, let user = authManager.currentUser {
                         // MARK: - GİRİŞ YAPILMIŞSA: KULLANICI PROFİLİ
                         VStack(spacing: 16) {
                             ZStack {
+                                
                                 Circle()
                                     .fill(isLiquidGlassEnabled ? Color.white.opacity(0.12) : AppTheme.isCepNavy.opacity(0.1))
                                     .frame(width: 80, height: 80)
@@ -99,6 +100,7 @@ public struct ProfileView: View {
                     } else {
                         // MARK: - GİRİŞ YAPILMAMIŞSA: MİSAFİR GİRİŞ KARTI
                         VStack(spacing: 16) {
+                            
                             Image(systemName: "person.crop.circle.badge.exclamationmark")
                                 .font(.system(size: 60))
                                 .foregroundColor(isLiquidGlassEnabled ? .white : AppTheme.isCepNavy)
