@@ -27,30 +27,29 @@ public struct ProfileView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     if authManager.isLoggedIn, let user = authManager.currentUser {
-                        // MARK: - GİRİŞ YAPILMIŞSA: KULLANICI PROFİLİ
                         VStack(spacing: 16) {
                             ZStack {
                                 
                                 Circle()
-                                    .fill(isLiquidGlassEnabled ? Color.white.opacity(0.12) : AppTheme.isCepNavy.opacity(0.1))
+                                    .fill(true ? Color.white.opacity(0.12) : AppTheme.isCepNavy.opacity(0.1))
                                     .frame(width: 80, height: 80)
                                 
                                 Image(systemName: "person.crop.circle.fill")
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 70, height: 70)
-                                    .foregroundColor(isLiquidGlassEnabled ? .white : AppTheme.isCepNavy)
+                                    .foregroundColor(true ? .white : AppTheme.isCepNavy)
                             }
                             .padding(.top, 20)
 
                             VStack(spacing: 4) {
                                 Text("\(user.name) \(user.surname)")
                                     .font(.system(size: 22, weight: .bold))
-                                    .foregroundColor(AppTheme.textPrimary(isLiquid: isLiquidGlassEnabled))
+                                    .foregroundColor(AppTheme.textPrimary(isLiquid: true))
 
                                 Text(user.mail)
                                     .font(.system(size: 14))
-                                    .foregroundColor(AppTheme.textSecondary(isLiquid: isLiquidGlassEnabled))
+                                    .foregroundColor(AppTheme.textSecondary(isLiquid: true))
                             }
                         }
 
@@ -98,7 +97,6 @@ public struct ProfileView: View {
                         .padding(.top, 10)
 
                     } else {
-                        // MARK: - GİRİŞ YAPILMAMIŞSA: MİSAFİR GİRİŞ KARTI
                         VStack(spacing: 16) {
                             
                             Image(systemName: "person.crop.circle.badge.exclamationmark")

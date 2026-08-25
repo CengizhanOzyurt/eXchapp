@@ -5,6 +5,7 @@
 //  Created by Cengizhan Özyurt on 6.08.2026.
 //
 import SwiftUI
+import CryptoKit
 
 public struct RegisterView: View {
     @AppStorage("liquidGlassEnabled") private var isLiquidGlassEnabled = false
@@ -59,6 +60,9 @@ public struct RegisterView: View {
             }
         }
         .navigationBarHidden(true)
+        .onTapGesture {
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        }
     }
 
     private var topBarSection: some View {
@@ -102,7 +106,7 @@ public struct RegisterView: View {
                 Text("Ad")
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(AppTheme.textSecondary(isLiquid: isLiquidGlassEnabled))
-                
+               
                 HStack(spacing: 10) {
                     Image(systemName: "person")
                         .foregroundColor(false ? Color.white.opacity(0.6) : AppTheme.isCepNavy.opacity(0.7))
@@ -119,7 +123,7 @@ public struct RegisterView: View {
                 Text("Soyad")
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(AppTheme.textSecondary(isLiquid: false))
-                
+               
                 HStack(spacing: 10) {
                     Image(systemName: "person")
                         .foregroundColor(false ? Color.white.opacity(0.6) : AppTheme.isCepNavy.opacity(0.7))
@@ -141,7 +145,7 @@ public struct RegisterView: View {
                     HStack {
                         Image(systemName: "calendar")
                             .foregroundColor(false ? Color.white.opacity(0.6) : AppTheme.isCepNavy.opacity(0.7))
-                        
+                       
                         DatePicker(
                             "",
                             selection: $birthDate,
@@ -151,7 +155,7 @@ public struct RegisterView: View {
                         .labelsHidden()
                         .environment(\.colorScheme, false ? .dark : .light)
                         .tint(false ? .cyan : AppTheme.isCepAccent)
-                        
+                       
                         Spacer()
                     }
                     .padding(.horizontal, 10)
@@ -175,14 +179,14 @@ public struct RegisterView: View {
                         HStack {
                             Image(systemName: "globe")
                                 .foregroundColor(false ? Color.white.opacity(0.6) : AppTheme.isCepNavy.opacity(0.7))
-                            
+                           
                             Text(selectedCountry)
                                 .font(.system(size: 13, weight: .medium))
                                 .foregroundColor(AppTheme.textPrimary(isLiquid: false))
                                 .lineLimit(1)
-                            
+                           
                             Spacer()
-                            
+                           
                             Image(systemName: "chevron.down")
                                 .font(.system(size: 11))
                                 .foregroundColor(AppTheme.textSecondary(isLiquid: isLiquidGlassEnabled))
@@ -265,6 +269,7 @@ public struct RegisterView: View {
                 .cornerRadius(10)
             }
 
+            // Sözleşme Onay Kutusu
             Button {
                 termsAccepted.toggle()
             } label: {
@@ -272,7 +277,7 @@ public struct RegisterView: View {
                     Image(systemName: termsAccepted ? "checkmark.square.fill" : "square")
                         .foregroundColor(termsAccepted ? (false ? .cyan : AppTheme.isCepAccent) : AppTheme.textSecondary(isLiquid: false))
                         .font(.system(size: 16))
-                    
+                   
                     Text("Bankacılık Sözleşmesi ve KVKK Aydınlatma Metni'ni okudum, onaylıyorum.")
                         .font(.system(size: 12))
                         .foregroundColor(AppTheme.textPrimary(isLiquid: false))
@@ -320,7 +325,7 @@ public struct RegisterView: View {
         }
 
         let calculatedAge = Calendar.current.dateComponents([.year], from: birthDate, to: Date()).year ?? 18
-        
+         
         guard calculatedAge >= 18 else {
             errorMessage = "Bireysel hesap açabilmek için en az 18 yaşında olmalısınız."
             return
@@ -338,17 +343,19 @@ public struct RegisterView: View {
 
         isLoading = true
         errorMessage = nil
-
+         
+        let securePasswordHash = sha256(passwordText)
+         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
             isLoading = false
-            
+             
             let initialBalance = 50000.0
             let success = DatabaseManager.shared.registerUser(
                 name: name,
                 surname: surname,
                 mail: email,
                 age: calculatedAge,
-                passwordHash: passwordText,
+                passwordHash: securePasswordHash,
                 initialBalance: initialBalance
             )
 
@@ -360,6 +367,12 @@ public struct RegisterView: View {
                 errorMessage = "Bu e-posta adresi ile kayıtlı bir hesap zaten var."
             }
         }
+    }
+
+    private func sha256(_ input: String) -> String {
+        let inputData = Data(input.utf8)
+        let hashedData = SHA256.hash(data: inputData)
+        return hashedData.compactMap { String(format: "%02x", $0) }.joined()
     }
 }
 

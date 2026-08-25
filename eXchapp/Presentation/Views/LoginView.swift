@@ -1,5 +1,13 @@
+//
+//  LoginView.swift
+//  ExchangeApp
+//
+//  Created by Cengizhan Özyurt on 6.08.2026.
+//
+
 import SwiftUI
 import LocalAuthentication
+import CryptoKit
 
 public struct LoginView: View {
     @AppStorage("liquidGlassEnabled") private var isLiquidGlassEnabled = false
@@ -50,6 +58,9 @@ public struct LoginView: View {
             }
         }
         .navigationBarHidden(true)
+        .onTapGesture {
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        }
     }
     
     private var topBarSection: some View {
@@ -240,38 +251,68 @@ public struct LoginView: View {
 
         isLoading = true
         errorMessage = nil
-
+        
+        let passwordHash = sha256(passwordText)
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             isLoading = false
-            if let user = DatabaseManager.shared.loginUser(mail: emailOrTC, passwordHash: passwordText) {
-                let session = UserSession(name: user.name, surname: user.surname, mail: user.mail, balance: user.balance)
+            if let user = DatabaseManager.shared.loginUser(mail: emailOrTC, passwordHash: passwordHash) {
+                let session = UserSession(
+                    name: user.name,
+                    surname: user.surname,
+                    mail: user.mail,
+                    balance: user.balance
+                )
                 AuthManager.shared.logIn(session)
                 onLoginSuccess?()
             } else {
-                errorMessage = "Giriş bilgileri hatalı veya kullanıcı bulunamadı."
+                errorMessage = "E-posta veya şifre hatalı."
             }
         }
     }
 
+    private func sha256(_ input: String) -> String {
+        let inputData = Data(input.utf8)
+        let hashedData = SHA256.hash(data: inputData)
+        return hashedData.compactMap { String(format: "%02x", $0) }.joined()
+    }
+    
     private func authenticateWithBiometrics() {
+        // 1. UserDefaults'tan bu cihazda Face ID ile eşleşen e-postayı kontrol et
+        guard let savedEmail = UserDefaults.standard.string(forKey: "savedUserEmailForFaceID"),
+              UserDefaults.standard.bool(forKey: "isFaceIDEnabled_\(savedEmail)") else {
+            errorMessage = "Bu cihazda etkinleştirilmiş Face ID hesabı yok. Lütfen önce şifrenizle giriş yapın."
+            return
+        }
+
         let context = LAContext()
         var error: NSError?
 
         if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
-            let reason = "Hesabınıza güvenli giriş yapmak için Face ID kullanın."
+            let reason = "Hesabınıza hızlı ve güvenli giriş yapmak için Face ID kullanın."
+            
             context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, authenticationError in
                 DispatchQueue.main.async {
                     if success {
-                        let session = UserSession(name: "Cengizhan", surname: "Özyurt", mail: "cengizhan@softtech.com", balance: 150000.0)
-                        AuthManager.shared.logIn(session)
-                        self.onLoginSuccess?()
+                        if let user = DatabaseManager.shared.getUser(byEmail: savedEmail) {
+                            let session = UserSession(
+                                name: user.name,
+                                surname: user.surname,
+                                mail: user.mail,
+                                balance: user.balance
+                            )
+                            AuthManager.shared.logIn(session)
+                            self.onLoginSuccess?()
+                        } else {
+                            self.errorMessage = "Kullanıcı veritabanında doğrulanamadı."
+                        }
                     } else {
                         self.errorMessage = "Face ID doğrulaması başarısız oldu."
                     }
                 }
             }
         } else {
-            errorMessage = "Cihazınızda biyometrik doğrulama desteklenmiyor veya kapalı."
+            errorMessage = "Cihazınızda Face ID desteklenmiyor veya izin verilmemiş."
         }
     }
 }

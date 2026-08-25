@@ -92,7 +92,6 @@ import SQLite3
         
         // MARK: - Authentication & User Operations (Login/Register)
         
-        /// Registers a new user into the local database (Register screen backend logic).
         public func registerUser(name: String, surname: String, mail:String, age:Int, passwordHash: String, initialBalance: Double = 10000.0) -> Bool {
             let userId = UUID().uuidString
             let dateString = ISO8601DateFormatter().string(from: Date())
@@ -123,4 +122,38 @@ import SQLite3
             return nil
         }
         
+        public func getUser(byEmail mail: String) -> (name: String, surname: String, mail: String, balance: Double)? {
+                let query = "SELECT name, surname, mail, balance FROM UserProfile WHERE mail = ? LIMIT 1;"
+                var stmt: OpaquePointer?
+                
+                if sqlite3_prepare_v2(db, query, -1, &stmt, nil) == SQLITE_OK {
+                    sqlite3_bind_text(stmt, 1, (mail as NSString).utf8String, -1, nil)
+                    
+                    if sqlite3_step(stmt) == SQLITE_ROW {
+                        let name = String(cString: sqlite3_column_text(stmt, 0))
+                        let surname = String(cString: sqlite3_column_text(stmt, 1))
+                        let retrievedMail = String(cString: sqlite3_column_text(stmt, 2))
+                        let balance = sqlite3_column_double(stmt, 3)
+                        sqlite3_finalize(stmt)
+                        return (name, surname, retrievedMail, balance)
+                    }
+                }
+                sqlite3_finalize(stmt)
+                return nil
+            }
+        public func resetDatabase() {
+                let dropUserTable = "DROP TABLE IF EXISTS UserProfile;"
+                let dropLatestRates = "DROP TABLE IF EXISTS LatestExchangeRates;"
+                let dropHistoricalRates = "DROP TABLE IF EXISTS HistoricalExchangeRates;"
+                
+                executeNONQuery(query: dropUserTable)
+                executeNONQuery(query: dropLatestRates)
+                executeNONQuery(query: dropHistoricalRates)
+                
+                createTables()
+                
+                UserDefaults.standard.removeObject(forKey: "savedUserEmailForFaceID")
+                
+                print("Veritabanı ve Face ID ayarları başarıyla sıfırlandı.")
+            }
 }

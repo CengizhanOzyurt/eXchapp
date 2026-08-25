@@ -12,6 +12,8 @@ public class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         let window = UIWindow(windowScene: windowScene)
         
+        window.overrideUserInterfaceStyle = .light
+        
         let rootTabBar = RootTabBarController(
             onLoginPromptRequested: { [weak self] in
                 self?.navigateToLogin()

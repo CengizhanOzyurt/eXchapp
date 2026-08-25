@@ -45,13 +45,15 @@ struct TradeDetailView: View {
             }
         }
         .navigationBarHidden(true)
+        .onTapGesture {
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        }
         .alert("İşlem Sonucu", isPresented: $tradeViewModel.showAlert) {
             Button("Tamam", role: .cancel) { }
         } message: {
             Text(tradeViewModel.alertMessage)
         }
         .onAppear {
-            // Ekran açıldığında seçili kurun indexini bul
             if let index = currencyViewModel.currencies.firstIndex(where: { $0.id == tradeViewModel.selectedCurrency.id }) {
                 currentScrollIndex = index
             }

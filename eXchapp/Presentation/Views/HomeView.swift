@@ -249,19 +249,6 @@ public struct HomeView: View {
         } message: {
             Text("Lütfen işlemlerinizi gerçekleştirmek veya profilinizi görmek için giriş yapınız.")
         }
-        .onAppear {
-            // GEÇİCİ TEST KODU (DEBUG İÇİN)
-            // Eğer kullanıcı zaten giriş yapmamışsa, sisteme sahte bir kullanıcı veriyoruz.
-            if !authManager.isLoggedIn {
-                let dummyUser = UserSession(
-                    name: "Test",
-                    surname: "Kullanıcısı",
-                    mail: "test@exchapp.com",
-                    balance: 75000.0 // Test için 75.000 TL bakiye tanımlıyoruz
-                )
-                authManager.logIn(dummyUser)
-            }
-        }
     }
     
     private var topTabBar: some View {
