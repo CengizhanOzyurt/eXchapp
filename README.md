@@ -35,18 +35,18 @@
 
 | Login / Face ID Auth | Registration |
 |:---:|:---:|
-| ![Login View](path/to/login_ss.png) | ![Register View](path/to/register_ss.png) |
+| <img src="path/to/login_ss.png" width="250" alt="Login View"> | <img src="path/to/register_ss.png" width="250" alt="Register View"> |
 | *Secure biometric & password authentication* | *Onboarding with strict validation* |
 
 | Dashboard / Home | Trade Detail (Live Marquee Ticker) |
 |:---:|:---:|
-| ![Home Dashboard](path/to/home_ss.png) | ![Trade Detail](path/to/trade_ss.png) |
+| <img src="path/to/home_ss.png" width="250" alt="Home Dashboard"> | <img src="path/to/trade_ss.png" width="250" alt="Trade Detail"> |
 | *Live rate cards & quick actions* | *Auto-scrolling ticker with touch-to-pause* |
 
-| Profile / Portfolio Wallet |
-|:---:|
-| ![Profile Wallet](path/to/profile_ss.png) |
-| *Holdings summary, balance, & session management* |
+| Profile / Portfolio Wallet | Currency Calculator |
+|:---:|:---:|
+| <img src="path/to/profile_ss.png" width="250" alt="Profile Wallet"> | <img src="path/to/calculator_ss.png" width="250" alt="Calculator View"> |
+| *Holdings summary, balance, & session management* | *Quick & accurate currency conversions* |
 
 ---
 
