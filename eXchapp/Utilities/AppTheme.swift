@@ -8,7 +8,7 @@
 import SwiftUI
 import UIKit
 
-// MARK: - Color Hex Extension (Global Ulaşılabilir)
+// MARK: - Color Hex Extension
 public extension Color {
     init(hex: String) {
         let scanner = Scanner(string: hex)
@@ -22,7 +22,6 @@ public extension Color {
 }
 
 public enum AppTheme {
-    // MARK: - Kurumsal İşCep Renkleri
     public static let isCepButton = Color(hex: "0D6CB5")
     public static let isCepNavy = Color(hex: "082870")
     public static let isCepBlue = Color(hex: "0B4DB7")
@@ -34,7 +33,7 @@ public enum AppTheme {
     public static let uiAccent = UIColor(isCepAccent)
     public static let uiNavy = UIColor(isCepNavy)
     
-    // MARK: - Dinamik Arka Plan
+    // MARK: - Dynamic Background
     @ViewBuilder
     public static func background(isLiquid: Bool) -> some View {
         if isLiquid {
@@ -54,7 +53,7 @@ public enum AppTheme {
         }
     }
     
-    // MARK: - Dinamik Metin & İkon Renkleri
+
     public static func textPrimary(isLiquid: Bool) -> Color {
         isLiquid ? .white : Color(hex: "000000")
     }
@@ -74,7 +73,6 @@ public enum AppTheme {
     }
 }
 
-// MARK: - Dinamik Kart Stili (Liquid Glass vs. İşCep Beyazı)
 public struct DynamicCardModifier: ViewModifier {
     let isLiquid: Bool
     let cornerRadius: CGFloat

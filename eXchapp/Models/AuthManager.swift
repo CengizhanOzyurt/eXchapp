@@ -13,12 +13,14 @@ public struct UserSession {
     public let surname: String
     public let mail: String
     public let balance: Double
+    public let holdings: [String: Double]
     
-    public init(name: String, surname: String, mail: String, balance: Double) {
+    public init(name: String, surname: String, mail: String, balance: Double, holdings: [String: Double] = [:]) {
         self.name = name
         self.surname = surname
         self.mail = mail
         self.balance = balance
+        self.holdings = holdings
     }
 }
 

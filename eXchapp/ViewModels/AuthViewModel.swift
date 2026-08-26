@@ -10,7 +10,7 @@ import Combine
 import CryptoKit
 
 @MainActor
-public final class AuthViewModel: ObservableObject{
+public final class AuthViewModel: ObservableObject {
     
     @Published public var isLoading: Bool = false
     @Published public var errorMessage: String? = nil
@@ -19,7 +19,7 @@ public final class AuthViewModel: ObservableObject{
         isLoading = true
         errorMessage = nil
         
-        let passwordHash = String(password.hashValue)
+        let passwordHash = sha256(password)
         
         let success = DatabaseManager.shared.registerUser(
             name: name,
@@ -31,29 +31,25 @@ public final class AuthViewModel: ObservableObject{
         )
         
         isLoading = false
-        
-        if success {
-            completion(true)
-        } else {
-            self.errorMessage = "Kayıt işlemi başarısız oldu. Bu e-posta kullanımda olabilir."
-            completion(false)
-        }
-        
+        completion(success)
     }
     
-    public func login(mail: String, password: String, completion: @escaping (Bool) -> Void){
+    public func login(mail: String, password: String, completion: @escaping (Bool) -> Void) {
         isLoading = true
         errorMessage = nil
         
-        let passwordHash = String(password.hashValue)
+        let passwordHash = sha256(password)
         
         if let userTuple = DatabaseManager.shared.loginUser(mail: mail, passwordHash: passwordHash) {
+            
+            let dbHoldings = DatabaseManager.shared.getUserHoldings(mail: userTuple.mail)
             
             let session = UserSession(
                 name: userTuple.name,
                 surname: userTuple.surname,
                 mail: userTuple.mail,
-                balance: userTuple.balance
+                balance: userTuple.balance,
+                holdings: dbHoldings
             )
             AuthManager.shared.logIn(session)
             
@@ -72,4 +68,3 @@ public final class AuthViewModel: ObservableObject{
         return hashedData.compactMap { String(format: "%02x", $0) }.joined()
     }
 }
-

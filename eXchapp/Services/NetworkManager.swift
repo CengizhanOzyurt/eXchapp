@@ -50,7 +50,6 @@ public final class NetworkManager {
             throw NetworkError.serverError(statusCode: httpResponse.statusCode)
         }
         do {
-            // Decode JSON data
             let decodedResponse = try JSONDecoder().decode(CurrencyResponse.self, from: data)
             return decodedResponse
         } catch {

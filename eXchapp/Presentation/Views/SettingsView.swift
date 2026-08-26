@@ -105,7 +105,6 @@ public struct SettingsView: View {
             context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, authenticationError in
                 DispatchQueue.main.async {
                     if success {
-                        // Doğrulama başarılı! Sadece bu hesaba özel eşleştirmeyi kaydediyoruz
                         UserDefaults.standard.set(email, forKey: "savedUserEmailForFaceID")
                         UserDefaults.standard.set(true, forKey: "isFaceIDEnabled_\(email)")
                         alertMessage = "Face ID bu hesap için başarıyla etkinleştirildi."

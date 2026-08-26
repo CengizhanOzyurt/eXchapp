@@ -48,7 +48,6 @@ public final class RootTabBarController: UITabBarController {
         updateClassicTabBarVisibility()
     }
     
-    // MARK: - Anlık Tema Değişimi (Gecikmesiz)
     @objc private func handleThemeChange() {
         UIView.performWithoutAnimation {
             self.configureAppearance()
@@ -238,11 +237,9 @@ public final class RootTabBarController: UITabBarController {
     private func updateClassicTabBarVisibility() {
         let useFallback = shouldUseClassicTabBarFallback()
 
-        // Sistem tab bar görünürlük ve etkileşim ayarı
         tabBar.alpha = useFallback ? 0 : 1
         tabBar.isUserInteractionEnabled = !useFallback
 
-        // Özel klasik bar gizleme ve katman yönetimi
         classicTabBar?.isHidden = !useFallback
         classicTabBar?.isUserInteractionEnabled = useFallback
         

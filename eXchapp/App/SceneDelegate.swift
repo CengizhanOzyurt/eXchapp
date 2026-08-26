@@ -1,3 +1,10 @@
+//
+//  SceneDelegate.swift
+//  ExchangeApp
+//
+//  Created by Cengizhan Özyurt on 6.08.2026.
+//
+
 import UIKit
 import SwiftUI
 
@@ -11,25 +18,33 @@ public class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = scene as? UIWindowScene else { return }
         
         let window = UIWindow(windowScene: windowScene)
-        
         window.overrideUserInterfaceStyle = .light
         
-        let rootTabBar = RootTabBarController(
-            onLoginPromptRequested: { [weak self] in
-                self?.navigateToLogin()
-            },
-            onRegisterPromptRequested: { [weak self] in
-                self?.navigateToRegister()
-            }
-        )
+        let splashView = SplashView { [weak self, weak window] in
+            guard let self = self, let window = window else { return }
+            
+            let rootTabBar = RootTabBarController(
+                onLoginPromptRequested: { [weak self] in
+                    self?.navigateToLogin()
+                },
+                onRegisterPromptRequested: { [weak self] in
+                    self?.navigateToRegister()
+                }
+            )
+            
+            let navController = UINavigationController(rootViewController: rootTabBar)
+            navController.setNavigationBarHidden(true, animated: false)
+            
+            self.navigationController = navController
+            
+            // 3. Şık bir geçiş efektiyle ana ekrana bağlanıyoruz
+            UIView.transition(with: window, duration: 0.4, options: .transitionCrossDissolve, animations: {
+                window.rootViewController = navController
+            }, completion: nil)
+        }
         
-        let navController = UINavigationController(rootViewController: rootTabBar)
-        navController.setNavigationBarHidden(true, animated: false)
-        
-        self.navigationController = navController
-        window.rootViewController = navController
+        window.rootViewController = UIHostingController(rootView: splashView)
         self.window = window
-        
         window.makeKeyAndVisible()
     }
     

@@ -35,7 +35,6 @@ public struct HomeView: View {
             AppTheme.background(isLiquid: isLiquidGlassEnabled)
             
             VStack(spacing: 0) {
-                // Header
                 HStack(spacing: 12) {
                     Button(action: {
                         if !authManager.isLoggedIn { showLoginAlert = true }
@@ -84,7 +83,6 @@ public struct HomeView: View {
                     VStack(spacing: 16) {
                         
                         if authManager.isLoggedIn {
-                            // Giriş Yapılmış Durum
                             VStack(alignment: .leading, spacing: 10) {
                                 HStack {
                                     Text("Maaş Hesabım")
@@ -126,7 +124,6 @@ public struct HomeView: View {
                             .padding(.horizontal, 16)
                             
                         } else {
-                            // Misafir Durumu
                             VStack(spacing: 12) {
                                 Image(systemName: "lock.shield.fill")
                                     .font(.system(size: 36))

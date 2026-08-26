@@ -85,11 +85,16 @@ public struct RegisterView: View {
                 .background(isLiquidGlassEnabled ? Color.white.opacity(0.12) : Color.white)
                 .cornerRadius(20)
                 .shadow(color: Color.black.opacity(isLiquidGlassEnabled ? 0.0 : 0.05), radius: 4)
+                Image("eXchappLogo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: 230)
+                    .frame(maxHeight: 80)
             }
             Spacer()
         }
         .padding(.horizontal, 16)
-        .padding(.top, 8)
+        .padding(.top, -8)
     }
 
     private var headerSection: some View {
@@ -248,7 +253,7 @@ public struct RegisterView: View {
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Şifre Tekrar")
+                Text("Şifre Tekrar (Sadece Rakam)")
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(AppTheme.textSecondary(isLiquid: false))
 
@@ -258,9 +263,23 @@ public struct RegisterView: View {
 
                     if isPasswordVisible {
                         TextField("••••••", text: $confirmPasswordText)
+                            .keyboardType(.numberPad)
+                            .onChange(of: confirmPasswordText) { newValue in
+                                let filtered = newValue.filter { $0.isNumber }
+                                if filtered != newValue {
+                                    confirmPasswordText = filtered
+                                }
+                            }
                             .foregroundColor(AppTheme.textPrimary(isLiquid: false))
                     } else {
                         SecureField("••••••", text: $confirmPasswordText)
+                            .keyboardType(.numberPad)
+                            .onChange(of: confirmPasswordText) { newValue in
+                                let filtered = newValue.filter { $0.isNumber }
+                                if filtered != newValue {
+                                    confirmPasswordText = filtered
+                                }
+                            }
                             .foregroundColor(AppTheme.textPrimary(isLiquid: false))
                     }
                 }
@@ -269,7 +288,6 @@ public struct RegisterView: View {
                 .cornerRadius(10)
             }
 
-            // Sözleşme Onay Kutusu
             Button {
                 termsAccepted.toggle()
             } label: {

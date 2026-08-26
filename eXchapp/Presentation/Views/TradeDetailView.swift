@@ -1,5 +1,5 @@
 import SwiftUI
-import Combine // Timer için gerekli
+import Combine
 
 struct TradeDetailView: View {
     @AppStorage("liquidGlassEnabled") private var isLiquidGlassEnabled = false
@@ -8,9 +8,10 @@ struct TradeDetailView: View {
     
     @Environment(\.dismiss) private var dismiss
     
-    // Otomatik kaydırma için Timer ve Index takibi
-    @State private var timer = Timer.publish(every: 2.5, on: .main, in: .common).autoconnect()
-    @State private var currentScrollIndex: Int = 0
+    @State private var autoScrollIndex: Int = 0
+    @State private var isUserInteracting: Bool = false
+    @State private var interactionTimer: Task<Void, Never>? = nil
+    private let autoScrollPublisher = Timer.publish(every: 1.5, on: .main, in: .common).autoconnect()
     
     init(currencyViewModel: CurrencyViewModel, initialCurrency: Currency) {
         self.currencyViewModel = currencyViewModel
@@ -34,7 +35,6 @@ struct TradeDetailView: View {
                         amountInputCard
                         tradeActionButtons
                         
-                        // YENİ: Toplam Bakiye ve Varlıklar
                         portfolioSummaryCard
                         
                         Spacer().frame(height: 30)
@@ -53,21 +53,15 @@ struct TradeDetailView: View {
         } message: {
             Text(tradeViewModel.alertMessage)
         }
-        .onAppear {
-            if let index = currencyViewModel.currencies.firstIndex(where: { $0.id == tradeViewModel.selectedCurrency.id }) {
-                currentScrollIndex = index
-            }
-        }
     }
     
-    // MARK: - 1. Üst Bar
     private var topBarSection: some View {
         HStack {
             Button(action: {
                 dismiss()
             }) {
                 HStack(spacing: 6) {
-                    Image(systemName: "chevron.down") // Alttan açıldığı için aşağı ok daha mantıklı
+                    Image(systemName: "chevron.down")
                     Text("Kapat")
                 }
                 .font(.system(size: 14, weight: .medium))
@@ -83,7 +77,7 @@ struct TradeDetailView: View {
             
             Text("\(tradeViewModel.selectedCurrency.id) / TRY")
                 .font(.system(size: 17, weight: .bold))
-                .foregroundColor(AppTheme.textPrimary(isLiquid: isLiquidGlassEnabled))
+                .foregroundColor(AppTheme.textPrimary(isLiquid: true))
             
             Spacer()
             
@@ -93,46 +87,69 @@ struct TradeDetailView: View {
         .padding(.top, 12)
     }
     
-    // MARK: - 2. Otomatik Kayan Haber Bülteni (Ticker)
     private var currencyHorizontalStrip: some View {
-        ScrollViewReader { proxy in
+        let baseCurrencies = currencyViewModel.currencies
+        let marqueeList = baseCurrencies + baseCurrencies + baseCurrencies
+        
+        return ScrollViewReader { proxy in
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
-                    ForEach(Array(currencyViewModel.currencies.enumerated()), id: \.element.id) { index, item in
+                    ForEach(Array(marqueeList.enumerated()), id: \.offset) { index, item in
                         let isSelected = item.id == tradeViewModel.selectedCurrency.id
                         
                         Button {
-                            // Kullanıcı manuel tıklarsa timer'ı etkilemeden kuru seç
-                            currentScrollIndex = index
+                            autoScrollIndex = index
                             withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
                                 tradeViewModel.selectCurrency(item)
-                                proxy.scrollTo(item.id, anchor: .center)
+                                proxy.scrollTo(index, anchor: .center)
                             }
                         } label: {
                             currencyItemView(item: item, isSelected: isSelected)
                         }
-                        .id(item.id)
+                        .id(index)
                     }
                 }
                 .padding(.horizontal, 16)
             }
-            .onReceive(timer) { _ in
-                // Otomatik kaydırma mantığı
-                guard !currencyViewModel.currencies.isEmpty else { return }
-                currentScrollIndex = (currentScrollIndex + 1) % currencyViewModel.currencies.count
-                let nextItem = currencyViewModel.currencies[currentScrollIndex]
+            .simultaneousGesture(
+                DragGesture(coordinateSpace: .local)
+                    .onChanged { _ in
+                        isUserInteracting = true
+                        interactionTimer?.cancel()
+                    }
+                    .onEnded { _ in
+                        interactionTimer = Task {
+                            try? await Task.sleep(nanoseconds: 3_000_000_000)
+                            if !Task.isCancelled {
+                                isUserInteracting = false
+                            }
+                        }
+                    }
+            )
+            .onReceive(autoScrollPublisher) { _ in
+                guard !isUserInteracting, !baseCurrencies.isEmpty else { return }
                 
+                let originalCount = baseCurrencies.count
+                if autoScrollIndex >= originalCount * 2 {
+                    autoScrollIndex = originalCount
+                    proxy.scrollTo(autoScrollIndex, anchor: .center)
+                }
+                
+                autoScrollIndex += 1
                 withAnimation(.easeInOut(duration: 0.8)) {
-                    proxy.scrollTo(nextItem.id, anchor: .center)
+                    proxy.scrollTo(autoScrollIndex, anchor: .center)
                 }
             }
             .onAppear {
-                proxy.scrollTo(tradeViewModel.selectedCurrency.id, anchor: .center)
+                let middleIndex = baseCurrencies.count
+                autoScrollIndex = middleIndex
+                proxy.scrollTo(middleIndex, anchor: .center)
             }
         }
+        .frame(height: 75)
     }
     
-    // MARK: - Bülten Kartı Tasarımı (Dikdörtgen Pencere)
+    // MARK: - Ticker Card Design
     @ViewBuilder
     private func currencyItemView(item: Currency, isSelected: Bool) -> some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -143,9 +160,8 @@ struct TradeDetailView: View {
                     .foregroundColor(getTextColor(isSelected: isSelected))
                 Spacer()
                 
-                // Yön Oku
                 Image(systemName: item.changePercent > 0 ? "arrow.up.right.square.fill" : (item.changePercent < 0 ? "arrow.down.right.square.fill" : "minus.square.fill"))
-                    .foregroundColor(getArrowColor(item: item, isSelected: isSelected))
+                    .foregroundColor(getArrowColor(item: item, isLeftOrSelected: isSelected))
             }
             
             HStack(spacing: 12) {
@@ -179,7 +195,7 @@ struct TradeDetailView: View {
         .shadow(color: getShadowColor(isSelected: isSelected), radius: isSelected ? 6 : 2)
     }
     
-    // MARK: - 3. Tüm Varlıklar (Cüzdan) Kartı
+    // MARK: - 3. Portfolio Summary (Wallet) Card
     private var portfolioSummaryCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Varlıklarım & Cüzdan Özeti")
@@ -187,7 +203,6 @@ struct TradeDetailView: View {
                 .foregroundColor(AppTheme.textPrimary(isLiquid: isLiquidGlassEnabled))
                 .padding(.bottom, 4)
             
-            // Toplam TL
             HStack {
                 Image(systemName: "turkishlirasign.circle.fill")
                     .foregroundColor(.blue)
@@ -203,11 +218,11 @@ struct TradeDetailView: View {
             
             Divider().padding(.vertical, 4)
             
-            // Diğer Varlıklar
+
             ForEach(tradeViewModel.userHoldings.sorted(by: { $0.key < $1.key }), id: \.key) { holding in
-                if holding.value > 0 { // Sadece varlığı olanları göster
+                if holding.value > 0 { 
                     HStack {
-                        Text(holding.key) // "USD", "EUR" vs.
+                        Text(holding.key) 
                             .font(.system(size: 13, weight: .bold))
                             .foregroundColor(AppTheme.textSecondary(isLiquid: isLiquidGlassEnabled))
                         Spacer()
@@ -225,7 +240,6 @@ struct TradeDetailView: View {
         .shadow(color: Color.black.opacity(isLiquidGlassEnabled ? 0.0 : 0.04), radius: 6)
     }
     
-    // MARK: - Ortak Kart ve İçerik Tasarımları (Kalan bölümler aynı)
     private var balanceInfoCard: some View {
         HStack(spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
@@ -351,7 +365,6 @@ struct TradeDetailView: View {
         }
     }
     
-    // MARK: - Tema Yardımcı Fonksiyonları (Beyaz veya Cam)
     private func getCardBackground() -> Color {
         isLiquidGlassEnabled ? Color.white.opacity(0.12) : Color.white
     }
@@ -366,8 +379,8 @@ struct TradeDetailView: View {
         return AppTheme.textPrimary(isLiquid: isLiquidGlassEnabled)
     }
     
-    private func getArrowColor(item: Currency, isSelected: Bool) -> Color {
-        if isSelected { return isLiquidGlassEnabled ? .black : .white }
+    private func getArrowColor(item: Currency, isLeftOrSelected: Bool) -> Color {
+        if isLeftOrSelected { return isLiquidGlassEnabled ? .black : .white }
         if item.changePercent > 0 { return .green }
         if item.changePercent < 0 { return .red }
         return .gray

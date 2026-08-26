@@ -18,15 +18,6 @@ final class TradeDetailViewModel: ObservableObject {
     
     @Published public var selectedCurrency: Currency
     @Published public var amountText: String = ""
-    
-    @Published public var userHoldings: [String: Double] =
-    [
-        "USD": 1250.0,
-        "EUR": 450.0,
-        "GBP": 120.0,
-        "XAU": 4.5
-    ]
-    
     @Published public var alertMessage: String = ""
     @Published public var showAlert: Bool = false
     
@@ -34,6 +25,10 @@ final class TradeDetailViewModel: ObservableObject {
     
     public init(initialCurrency: Currency) {
         self.selectedCurrency = initialCurrency
+    }
+    
+    public var userHoldings: [String: Double] {
+        authManager.currentUser?.holdings ?? [:]
     }
     
     public var currentHolding: Double {
@@ -74,9 +69,10 @@ final class TradeDetailViewModel: ObservableObject {
         }
 
         let newBalance = currentTLBalance - totalCost
-        updateUserBalance(newBalance)
-
-        userHoldings[selectedCurrency.id] = currentHolding + inputAmount
+        var updatedHoldings = userHoldings
+        updatedHoldings[selectedCurrency.id] = currentHolding + inputAmount
+        
+        updateUserData(newBalance: newBalance, newHoldings: updatedHoldings)
 
         triggerAlert("Tebrikler! \(String(format: "%.2f", inputAmount)) \(selectedCurrency.id) alış işleminiz gerçekleşti.")
         amountText = ""
@@ -95,21 +91,31 @@ final class TradeDetailViewModel: ObservableObject {
         
         let totalGain = estimatedTotalGain
         let newBalance = currentTLBalance + totalGain
-        updateUserBalance(newBalance)
         
-        userHoldings[selectedCurrency.id] = currentHolding - inputAmount
+        var updatedHoldings = userHoldings
+        updatedHoldings[selectedCurrency.id] = currentHolding - inputAmount
+        
+        updateUserData(newBalance: newBalance, newHoldings: updatedHoldings)
         
         triggerAlert("Tebrikler! \(String(format: "%.2f", inputAmount)) \(selectedCurrency.id) satış işleminiz gerçekleşti.")
         amountText = ""
     }
     
-    private func updateUserBalance(_ newBalance: Double) {
+    private func updateUserData(newBalance: Double, newHoldings: [String: Double]) {
         guard let current = authManager.currentUser else { return }
+        
+        DatabaseManager.shared.updateUserBalance(mail: current.mail, newBalance: newBalance)
+        
+        for (currency, amount) in newHoldings {
+            DatabaseManager.shared.updateUserHolding(mail: current.mail, currencyCode: currency, amount: amount)
+        }
+        
         let updatedSession = UserSession(
             name: current.name,
             surname: current.surname,
             mail: current.mail,
-            balance: newBalance
+            balance: newBalance,
+            holdings: newHoldings
         )
         authManager.logIn(updatedSession)
     }

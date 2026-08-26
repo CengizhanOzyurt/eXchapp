@@ -80,9 +80,9 @@ public struct LoginView: View {
                 .foregroundColor(AppTheme.textTertiary(isLiquid: false))
                 .padding(.horizontal, 14)
                 .padding(.vertical, 8)
-                .background(false ? Color.white.opacity(0.12) : Color.white)
+                .background(Color.white)
                 .cornerRadius(20)
-                .shadow(color: Color.black.opacity(false ? 0.0 : 0.05), radius: 4)
+                .shadow(color: Color.black.opacity(0.05), radius: 4)
             }
             Spacer()
         }
@@ -93,9 +93,11 @@ public struct LoginView: View {
     private var headerSection: some View {
         VStack(spacing: 10) {
             Spacer()
-            Text("eXchapp")
-                .font(.system(size: 44, weight: .bold))
-                .foregroundColor(.white)
+            Image("eXchappLogo")
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: 280)
+                .frame(maxHeight: 180)
         }
     }
     
@@ -108,7 +110,7 @@ public struct LoginView: View {
                 
                 HStack(spacing: 10) {
                     Image(systemName: "person")
-                        .foregroundColor(false ? Color.white.opacity(0.6) : AppTheme.isCepNavy.opacity(0.7))
+                        .foregroundColor(AppTheme.isCepNavy.opacity(0.7))
                     
                     TextField("Giriş yapın", text: $emailOrTC)
                         .autocapitalization(.none)
@@ -121,19 +123,33 @@ public struct LoginView: View {
             }
             
             VStack(alignment: .leading, spacing: 6) {
-                Text("Bireysel Şifre")
+                Text("Bireysel Şifre (Sadece Rakam)")
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(AppTheme.textSecondary(isLiquid: false))
                 
                 HStack(spacing: 10) {
                     Image(systemName: "lock")
-                        .foregroundColor(false ? Color.white.opacity(0.6) : AppTheme.isCepNavy.opacity(0.7))
+                        .foregroundColor(AppTheme.isCepNavy.opacity(0.7))
                     
                     if isPasswordVisible {
                         TextField("Şifreniz", text: $passwordText)
+                            .keyboardType(.numberPad)
+                            .onChange(of: passwordText) { newValue in
+                                let filtered = newValue.filter { $0.isNumber }
+                                if filtered != newValue {
+                                    passwordText = filtered
+                                }
+                            }
                             .foregroundColor(AppTheme.textPrimary(isLiquid: false))
                     } else {
                         SecureField("••••••", text: $passwordText)
+                            .keyboardType(.numberPad)
+                            .onChange(of: passwordText) { newValue in
+                                let filtered = newValue.filter { $0.isNumber }
+                                if filtered != newValue {
+                                    passwordText = filtered
+                                }
+                            }
                             .foregroundColor(AppTheme.textPrimary(isLiquid: false))
                     }
                     
@@ -141,7 +157,7 @@ public struct LoginView: View {
                         isPasswordVisible.toggle()
                     } label: {
                         Image(systemName: isPasswordVisible ? "eye.slash.fill" : "eye.fill")
-                            .foregroundColor(false ? Color.white.opacity(0.6) : Color.gray)
+                            .foregroundColor(Color.gray)
                     }
                 }
                 .padding(12)
@@ -155,7 +171,7 @@ public struct LoginView: View {
                 } label: {
                     HStack(spacing: 6) {
                         Image(systemName: rememberMe ? "checkmark.square.fill" : "square")
-                            .foregroundColor(rememberMe ? (false ? .cyan : AppTheme.isCepAccent) : AppTheme.textSecondary(isLiquid: false))
+                            .foregroundColor(rememberMe ? AppTheme.isCepAccent : AppTheme.textSecondary(isLiquid: false))
                         Text("Beni Hatırla")
                             .font(.system(size: 12))
                             .foregroundColor(AppTheme.textPrimary(isLiquid: false))
@@ -257,11 +273,13 @@ public struct LoginView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             isLoading = false
             if let user = DatabaseManager.shared.loginUser(mail: emailOrTC, passwordHash: passwordHash) {
+                let dbHoldings = DatabaseManager.shared.getUserHoldings(mail: user.mail)
                 let session = UserSession(
                     name: user.name,
                     surname: user.surname,
                     mail: user.mail,
-                    balance: user.balance
+                    balance: user.balance,
+                    holdings: dbHoldings
                 )
                 AuthManager.shared.logIn(session)
                 onLoginSuccess?()
@@ -278,7 +296,6 @@ public struct LoginView: View {
     }
     
     private func authenticateWithBiometrics() {
-        // 1. UserDefaults'tan bu cihazda Face ID ile eşleşen e-postayı kontrol et
         guard let savedEmail = UserDefaults.standard.string(forKey: "savedUserEmailForFaceID"),
               UserDefaults.standard.bool(forKey: "isFaceIDEnabled_\(savedEmail)") else {
             errorMessage = "Bu cihazda etkinleştirilmiş Face ID hesabı yok. Lütfen önce şifrenizle giriş yapın."
@@ -291,16 +308,19 @@ public struct LoginView: View {
         if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
             let reason = "Hesabınıza hızlı ve güvenli giriş yapmak için Face ID kullanın."
             
-            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, authenticationError in
+            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, _ in
                 DispatchQueue.main.async {
                     if success {
                         if let user = DatabaseManager.shared.getUser(byEmail: savedEmail) {
+                            let dbHoldings = DatabaseManager.shared.getUserHoldings(mail: user.mail)
                             let session = UserSession(
                                 name: user.name,
                                 surname: user.surname,
                                 mail: user.mail,
-                                balance: user.balance
+                                balance: user.balance,
+                                holdings: dbHoldings
                             )
+                            
                             AuthManager.shared.logIn(session)
                             self.onLoginSuccess?()
                         } else {

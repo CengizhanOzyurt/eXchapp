@@ -11,6 +11,8 @@ public struct ProfileView: View {
     @AppStorage("liquidGlassEnabled") private var isLiquidGlassEnabled = false
     @StateObject private var authManager = AuthManager.shared
     
+    @State private var userHoldings: [String: Double] = ["USD": 150.0, "EUR": 75.50]
+    
     public var onLoginPromptRequested: (() -> Void)?
     public var onRegisterPromptRequested: (() -> Void)?
     
@@ -27,9 +29,9 @@ public struct ProfileView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     if authManager.isLoggedIn, let user = authManager.currentUser {
+                        
                         VStack(spacing: 16) {
                             ZStack {
-                                
                                 Circle()
                                     .fill(true ? Color.white.opacity(0.12) : AppTheme.isCepNavy.opacity(0.1))
                                     .frame(width: 80, height: 80)
@@ -54,25 +56,55 @@ public struct ProfileView: View {
                         }
 
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Hesap Özeti")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(AppTheme.textSecondary(isLiquid: isLiquidGlassEnabled))
+                            Text("Varlıklarım & Cüzdan Özeti")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundColor(AppTheme.textPrimary(isLiquid: isLiquidGlassEnabled))
+                                .padding(.bottom, 4)
                             
                             HStack {
-                                Text("Varlık Toplamı")
-                                    .font(.system(size: 15))
+                                Image(systemName: "turkishlirasign.circle.fill")
+                                    .foregroundColor(.blue)
+                                    .font(.title3)
+                                Text("Kullanılabilir Bakiye")
+                                    .font(.system(size: 13, weight: .medium))
                                     .foregroundColor(AppTheme.textPrimary(isLiquid: isLiquidGlassEnabled))
                                 Spacer()
-                                Text(String(format: "%.2f TL", user.balance))
-                                    .font(.system(size: 18, weight: .bold))
-                                    .foregroundColor(isLiquidGlassEnabled ? .cyan : AppTheme.isCepNavy)
+                                Text(String(format: "%.2f ₺", user.balance))
+                                    .font(.system(size: 14, weight: .bold))
+                                    .foregroundColor(AppTheme.textPrimary(isLiquid: isLiquidGlassEnabled))
+                            }
+                            
+                            Divider().padding(.vertical, 4)
+                            
+                            
+                            if !user.holdings.isEmpty {
+                                ForEach(user.holdings.sorted(by: { $0.key < $1.key }), id: \.key) { holding in
+                                    if holding.value > 0 {
+                                        HStack {
+                                            Text(holding.key)
+                                                .font(.system(size: 13, weight: .bold))
+                                                .foregroundColor(AppTheme.textSecondary(isLiquid: isLiquidGlassEnabled))
+                                            Spacer()
+                                            Text(String(format: "%.2f %@", holding.value, holding.key))
+                                                .font(.system(size: 14, weight: .semibold))
+                                                .foregroundColor(isLiquidGlassEnabled ? .cyan : AppTheme.isCepNavy)
+                                        }
+                                        .padding(.vertical, 2)
+                                    }
+                                }
+                            } else {
+                                HStack {
+                                    Text("Henüz farklı bir döviz varlığınız bulunmuyor.")
+                                        .font(.system(size: 13))
+                                        .foregroundColor(AppTheme.textSecondary(isLiquid: isLiquidGlassEnabled))
+                                    Spacer()
+                                }
                             }
                         }
                         .padding(18)
                         .appCard(isLiquid: isLiquidGlassEnabled, cornerRadius: 16)
                         .padding(.horizontal, 16)
 
-                        // Çıkış Yap Butonu
                         Button {
                             withAnimation {
                                 authManager.logOut()
@@ -98,7 +130,6 @@ public struct ProfileView: View {
 
                     } else {
                         VStack(spacing: 16) {
-                            
                             Image(systemName: "person.crop.circle.badge.exclamationmark")
                                 .font(.system(size: 60))
                                 .foregroundColor(isLiquidGlassEnabled ? .white : AppTheme.isCepNavy)
@@ -126,8 +157,6 @@ public struct ProfileView: View {
                                         .background(isLiquidGlassEnabled ? Color.white : AppTheme.isCepButton)
                                         .cornerRadius(12)
                                 }
-
-                                
                             }
                             .padding(.top, 10)
                         }
@@ -141,6 +170,7 @@ public struct ProfileView: View {
         }
     }
 }
+
 #Preview {
     ProfileView()
 }
