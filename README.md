@@ -33,20 +33,50 @@
 
 ## Screenshots
 
-| Login / Face ID Auth | Registration |
-|:---:|:---:|
-| <img src="images/login_ss.png" width="250" alt="Login View"> | <img src="images/register_ss.png" width="250" alt="Register View"> |
-| *Secure biometric & password authentication* | *Onboarding with strict validation* |
-
-| Dashboard / Home | Trade Detail (Live Marquee Ticker) |
-|:---:|:---:|
-| <img src="images/home_ss.png" width="250" alt="Home Dashboard"> | <img src="images/trade_ss.png" width="250" alt="Trade Detail"> |
-| *Live rate cards & quick actions* | *Auto-scrolling ticker with touch-to-pause* |
-
-| Profile / Portfolio Wallet | Currency Calculator |
-|:---:|:---:|
-| <img src="images/profile_ss.png" width="250" alt="Profile Wallet"> | <img src="images/calculator_ss.png" width="250" alt="Calculator View"> |
-| *Holdings summary, balance, & session management* | *Quick & accurate currency conversions* |
+<table width="100%">
+  <tr>
+    <th width="50%">Login / Face ID Auth</th>
+    <th width="50%">Registration</th>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="images/login_ss.png" width="250" alt="Login View"><br>
+      <i>Secure biometric & password authentication</i>
+    </td>
+    <td align="center">
+      <img src="images/register_ss.png" width="250" alt="Register View"><br>
+      <i>Onboarding with strict validation</i>
+    </td>
+  </tr>
+  <tr>
+    <th>Dashboard / Home</th>
+    <th>Trade Detail (Live Marquee Ticker)</th>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="images/home_ss.png" width="250" alt="Home Dashboard"><br>
+      <i>Live rate cards & quick actions</i>
+    </td>
+    <td align="center">
+      <img src="images/trade_ss.png" width="250" alt="Trade Detail"><br>
+      <i>Auto-scrolling ticker with touch-to-pause</i>
+    </td>
+  </tr>
+  <tr>
+    <th>Profile / Portfolio Wallet</th>
+    <th>Currency Calculator</th>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="images/profile_ss.png" width="250" alt="Profile Wallet"><br>
+      <i>Holdings summary, balance, & session management</i>
+    </td>
+    <td align="center">
+      <img src="images/calculator_ss.png" width="250" alt="Calculator View"><br>
+      <i>Quick & accurate currency conversions</i>
+    </td>
+  </tr>
+</table>
 
 ---
 
