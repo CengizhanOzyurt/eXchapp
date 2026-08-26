@@ -273,9 +273,9 @@ eXchapp/
 
 ### Author
 **Cengizhan Özyurt** — iOS Engineer
-- GitHub: [@yourusername](https://github.com/CengizhanOzyurt)
+- GitHub: (https://github.com/CengizhanOzyurt)
 - Email: CengizhanOzyurt0@gmail.com
-- LinkedIn: [linkedin.com/in/yourprofile](https://linkedin.com/in/Cengizhan Özyurt)
+- LinkedIn: (https://linkedin.com/in/cengizhan-özyurt)
 
 ### License
 ```
