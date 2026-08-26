@@ -272,10 +272,10 @@ eXchapp/
 ## Contact & License
 
 ### Author
-**Cengizhan Özyurt** — Senior iOS Engineer
-- GitHub: [@yourusername](https://github.com/yourusername)
-- Email: your.email@example.com
-- LinkedIn: [linkedin.com/in/yourprofile](https://linkedin.com/in/yourprofile)
+**Cengizhan Özyurt** — iOS Engineer
+- GitHub: [@yourusername](https://github.com/CengizhanOzyurt)
+- Email: CengizhanOzyurt0@gmail.com
+- LinkedIn: [linkedin.com/in/yourprofile](https://linkedin.com/in/Cengizhan Özyurt)
 
 ### License
 ```
