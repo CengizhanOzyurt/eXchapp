@@ -175,10 +175,10 @@ cd eXchapp
 open eXchapp.xcodeproj
 
 # 3. Select a simulator or connected device
-#    (Xcode → Product → Destination → Pick any iPhone, iOS 15+)
+(Xcode → Product → Destination → Pick any iPhone, iOS 15+)
 
 # 4. Build and run
-#    Press ⌘R, or click the Play button in the Xcode toolbar
+Press ⌘R, or click the Play button in the Xcode toolbar
 ```
 
 > **Note**: The SQLite database file is created at first launch inside the app's `Documents` directory as `SofttechBank_v3.sqlite`. No external network or backend is required — the entire app runs fully offline with simulated live rates.
