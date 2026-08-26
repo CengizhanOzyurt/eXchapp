@@ -112,9 +112,9 @@
 ### 1. MVVM Architecture with SwiftUI
 eXchapp follows a strict **Model-View-ViewModel** separation, ensuring unidirectional data flow and maximum testability.
 
-- **Models** — Pure value types (`struct Currency`, `struct UserSession`) with zero side-effects. See [CurrencyModel.swift](file:///Users/kawhi2ceng/Desktop/softtech/eXchapp/eXchapp/Models/CurrencyModel.swift) and [AuthManager.swift](file:///Users/kawhi2ceng/Desktop/softtech/eXchapp/eXchapp/Models/AuthManager.swift).
-- **ViewModels** — `@MainActor`-isolated `ObservableObject` classes that own business logic, expose `@Published` state, and mediate between Models and Services. See [CurrencyViewModel.swift](file:///Users/kawhi2ceng/Desktop/softtech/eXchapp/eXchapp/ViewModels/CurrencyViewModel.swift), [AuthViewModel.swift](file:///Users/kawhi2ceng/Desktop/softtech/eXchapp/eXchapp/ViewModels/AuthViewModel.swift), and [TradeDetailViewModel.swift](file:///Users/kawhi2ceng/Desktop/softtech/eXchapp/eXchapp/ViewModels/TradeDetailViewModel.swift).
-- **Views** — 100% declarative SwiftUI with `@ObservedObject` / `@StateObject` bindings, custom theming, and no direct database access. See [LoginView.swift](file:///Users/kawhi2ceng/Desktop/softtech/eXchapp/eXchapp/Presentation/Views/LoginView.swift), [TradeDetailView.swift](file:///Users/kawhi2ceng/Desktop/softtech/eXchapp/eXchapp/Presentation/Views/TradeDetailView.swift), [ProfileView.swift](file:///Users/kawhi2ceng/Desktop/softtech/eXchapp/eXchapp/Presentation/Views/ProfileView.swift).
+- **Models** — Pure value types (`struct Currency`, `struct UserSession`) with zero side-effects. See [CurrencyModel.swift](file:///Users/kawhi2ceng/Desktop/eXchapp/eXchapp/Models/CurrencyModel.swift) and [AuthManager.swift](file:///Users/kawhi2ceng/Desktop/eXchapp/eXchapp/Models/AuthManager.swift).
+- **ViewModels** — `@MainActor`-isolated `ObservableObject` classes that own business logic, expose `@Published` state, and mediate between Models and Services. See [CurrencyViewModel.swift](file:///Users/kawhi2ceng/Desktop/eXchapp/eXchapp/ViewModels/CurrencyViewModel.swift), [AuthViewModel.swift](file:///Users/kawhi2ceng/Desktop/eXchapp/eXchapp/ViewModels/AuthViewModel.swift), and [TradeDetailViewModel.swift](file:///Users/kawhi2ceng/Desktop/eXchapp/eXchapp/ViewModels/TradeDetailViewModel.swift).
+- **Views** — 100% declarative SwiftUI with `@ObservedObject` / `@StateObject` bindings, custom theming, and no direct database access. See [LoginView.swift](file:///Users/kawhi2ceng/Desktop/eXchapp/eXchapp/Presentation/Views/LoginView.swift), [TradeDetailView.swift](file:///Users/kawhi2ceng/Desktop/eXchapp/eXchapp/Presentation/Views/TradeDetailView.swift), [ProfileView.swift](file:///Users/kawhi2ceng/Desktop/eXchapp/eXchapp/Presentation/Views/ProfileView.swift).
 
 ### 2. Reactive Programming with Combine
 The entire currency pipeline and UI refresh cycle is **Combine-driven**:
@@ -126,7 +126,7 @@ The entire currency pipeline and UI refresh cycle is **Combine-driven**:
 ### 3. Offline-First SQLite3 Database (C-Level Safe Binding)
 eXchapp ships with a **raw SQLite3 C API** persistence layer — no ORM wrappers, no SwiftData, no CoreData. This approach is deliberate:
 
-- **Parameterized queries via `sqlite3_bind_*`** — *every* user-supplied value (email, name, password hash, amounts) is bound to a prepared statement using `sqlite3_bind_text`, `sqlite3_bind_int`, or `sqlite3_bind_double`. **Zero string interpolation in SQL → zero SQL injection surface.** See [DatabaseManager.swift](file:///Users/kawhi2ceng/Desktop/softtech/eXchapp/eXchapp/Services/DatabaseManager.swift#L98-L135).
+- **Parameterized queries via `sqlite3_bind_*`** — *every* user-supplied value (email, name, password hash, amounts) is bound to a prepared statement using `sqlite3_bind_text`, `sqlite3_bind_int`, or `sqlite3_bind_double`. **Zero string interpolation in SQL → zero SQL injection surface.** See [DatabaseManager.swift](file:///Users/kawhi2ceng/Desktop/ /eXchapp/eXchapp/Services/DatabaseManager.swift#L98-L135).
 
   ```swift
   sqlite3_bind_text(stmt, 1, (userId as NSString).utf8String, -1, nil)
@@ -153,11 +153,11 @@ public struct UserSession {
 
 - `AuthManager.shared.currentUser` is the **only** in-memory source for the active session.
 - `@Published var isLoggedIn: Bool` drives conditional UI (e.g., ProfileView swaps between login-prompt and authenticated states).
-- On successful DB write (trade, update), the ViewModel updates *both* the DB row *and* refreshes the session struct, keeping storage and memory consistent by construction. See [AuthManager.swift](file:///Users/kawhi2ceng/Desktop/softtech/eXchapp/eXchapp/Models/AuthManager.swift#L11-L44).
+- On successful DB write (trade, update), the ViewModel updates *both* the DB row *and* refreshes the session struct, keeping storage and memory consistent by construction. See [AuthManager.swift](file:///Users/kawhi2ceng/Desktop/ /eXchapp/eXchapp/Models/AuthManager.swift#L11-L44).
 
 ### 5. Advanced UI/UX — The Marquee Ticker
 
-The horizontal currency strip in [TradeDetailView.swift](file:///Users/kawhi2ceng/Desktop/softtech/eXchapp/eXchapp/Presentation/Views/TradeDetailView.swift#L90-L150) is a custom implementation with three noteworthy behaviors:
+The horizontal currency strip in [TradeDetailView.swift](file:///Users/kawhi2ceng/Desktop/ /eXchapp/eXchapp/Presentation/Views/TradeDetailView.swift#L90-L150) is a custom implementation with three noteworthy behaviors:
 
 1. **Triple-buffered infinite scroll** — The data array is concatenated 3× (`baseCurrencies + baseCurrencies + baseCurrencies`). When the scroll index reaches `2 * originalCount`, the `ScrollViewReader` silently rewinds to `originalCount`, giving the illusion of a continuous loop without visible snap-back.
 
@@ -167,7 +167,7 @@ The horizontal currency strip in [TradeDetailView.swift](file:///Users/kawhi2cen
 
 ### 6. High-Security Posture
 
-- **Password hashing via CryptoKit SHA-256** — Cleartext passwords never touch the database. Before any write or read, the input string is hashed through `CryptoKit.SHA256` and stored as a 64-character hex digest. Identical logic is used in both [LoginView.swift](file:///Users/kawhi2ceng/Desktop/softtech/eXchapp/eXchapp/Presentation/Views/LoginView.swift#L292-L296) and [AuthViewModel.swift](file:///Users/kawhi2ceng/Desktop/softtech/eXchapp/eXchapp/ViewModels/AuthViewModel.swift#L65-L69):
+- **Password hashing via CryptoKit SHA-256** — Cleartext passwords never touch the database. Before any write or read, the input string is hashed through `CryptoKit.SHA256` and stored as a 64-character hex digest. Identical logic is used in both [LoginView.swift](file:///Users/kawhi2ceng/Desktop/ /eXchapp/eXchapp/Presentation/Views/LoginView.swift#L292-L296) and [AuthViewModel.swift](file:///Users/kawhi2ceng/Desktop/ /eXchapp/eXchapp/ViewModels/AuthViewModel.swift#L65-L69):
 
   ```swift
   private func sha256(_ input: String) -> String {
@@ -211,7 +211,7 @@ open eXchapp.xcodeproj
 Press ⌘R, or click the Play button in the Xcode toolbar
 ```
 
-> **Note**: The SQLite database file is created at first launch inside the app's `Documents` directory as `SofttechBank_v3.sqlite`. No external network or backend is required — the entire app runs fully offline with simulated live rates.
+> **Note**: The SQLite database file is created at first launch inside the app's `Documents` directory as `*****Bank_v3.sqlite`. No external network or backend is required — the entire app runs fully offline with simulated live rates.
 
 ---
 
@@ -273,9 +273,9 @@ eXchapp/
 
 ### Author
 **Cengizhan Özyurt** — iOS Engineer
-- GitHub: (https://github.com/CengizhanOzyurt)
+- GitHub: https://github.com/CengizhanOzyurt
 - Email: CengizhanOzyurt0@gmail.com
-- LinkedIn: (https://linkedin.com/in/cengizhan-özyurt)
+- LinkedIn: https://linkedin.com/in/cengizhan-özyurt
 
 ### License
 ```
