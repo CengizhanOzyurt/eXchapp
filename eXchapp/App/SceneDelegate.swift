@@ -37,7 +37,6 @@ public class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             
             self.navigationController = navController
             
-            // 3. Şık bir geçiş efektiyle ana ekrana bağlanıyoruz
             UIView.transition(with: window, duration: 0.4, options: .transitionCrossDissolve, animations: {
                 window.rootViewController = navController
             }, completion: nil)
